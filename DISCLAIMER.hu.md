@@ -1,551 +1,408 @@
-# Jogi, biztonsági és kutatási nyilatkozat
+# Jogi, kutatási és licencelési nyilatkozat
 
-## Kutatási és oktatási cél
+## Fujitsu FUTRO S930 / D3313 BIOS-helyreállítási kutatás
 
-Ez a repository saját ellenőrzés alatt álló hardveren végzett független műszaki vizsgálatot dokumentál.
+Ez a tárhely a Fujitsu FUTRO S930 rendszerekkel és a D3313 sorozatú hardverekkel kapcsolatos független műszaki kutatásokat, diagnosztikai munkákat, firmware-helyreállítási kísérleteket, hardvermegfigyeléseket és kapcsolódó eljárásokat dokumentálja.
 
-Az anyag célja:
-
-- műszaki kutatás;
-- firmware-elemzés;
-- hardvermegőrzés;
-- dokumentáció;
-- reprodukálhatóság;
-- oktatás;
-- valamint a kutató ellenőrzése alatt álló hardver jogszerű javítása.
-
-Az itt található anyag nem tekintendő hivatalos Fujitsu javítási eljárásnak, gyártói szervizkézikönyvnek, hitelesített mérnöki dokumentációnak vagy garantált helyreállítási módszernek.
+Ez a dokumentum meghatározza a repozitórium jogi, licencelési, kutatási, biztonsági és harmadik féltől származó anyagokra vonatkozó kereteit.
 
 ---
 
-## Független projekt
+## 1. Független kutatási projekt
 
-Ez a projekt független, és nem áll kapcsolatban, nem rendelkezik jóváhagyással, támogatással vagy szponzorációval többek között az alábbi szervezetektől és gyártóktól:
+Ez a tárhely független kutatási és dokumentációs projekt.
 
-- Fujitsu;
-- Kontron;
-- Realtek;
-- Macronix;
-- WCH;
-- AMI;
-- valamint bármely más, ebben a repositoryban hivatkozott gyártó, szabványügyi szervezet, szoftverprojekt vagy közösség.
+Nem hivatalos Fujitsu-projekt, és nem áll kapcsolatban a Fujitsuval vagy a tárhelyen említett más hardver-, szoftver-, firmware-, lapkakészlet-, operációsrendszer- vagy eszközgyártóval.
 
-A terméknevek, védjegyek, modellnevek, szoftvernevek és vállalatnevek a megfelelő jogosultak tulajdonát képezik.
+A projektet ezek a vállalatok nem szponzorálják, nem hagyják jóvá, nem tanúsítják és nem támogatják hivatalosan.
 
-Ezek kizárólag műszaki azonosítás, dokumentáció, forráshivatkozás és kutatási célból szerepelnek.
+Minden terméknév, cégnév, védjegy, szolgáltatásvédjegy, firmware-név, szoftvernév és logó a megfelelő jogosult tulajdonát képezi.
+
+A harmadik féltől származó termékekre történő hivatkozások kizárólag azonosítási, interoperabilitási, műszaki dokumentációs, kutatási és oktatási célokat szolgálnak.
 
 ---
 
-## A kísérleti vizsgálat hatóköre
+## 2. A tárhely célja
 
-A repositoryban dokumentált eredmények elsősorban egyetlen, Fujitsu D3313-E1 alaplappal szerelt Fujitsu FUTRO S930 rendszer vizsgálatából származnak.
+A tárhely elsődleges céljai:
 
-Eltérő, kifejezett megjelölés hiányában az ezen a gépen tett megfigyelések nem általánosíthatók automatikusan:
+- BIOS- és firmware-helyreállítási eljárások dokumentálása;
+- a Fujitsu FUTRO S930 és D3313 sorozatú rendszerek hardverspecifikus működésének dokumentálása;
+- diagnosztikai megfigyelések és kísérleti eredmények rögzítése;
+- reprodukálható kutatási jegyzetek megőrzése;
+- firmware-struktúrák és platformspecifikus konfigurációk elemzése;
+- gépspecifikus konfigurációk és OEM-azonosító adatok helyreállításának dokumentálása;
+- helyreállítási módszerek, eszközök, firmware-csomagok és hardverviselkedések összehasonlítása;
+- jogszerű javítási, helyreállítási, interoperabilitási, kutatási, oktatási és védekező célú műszaki elemzés támogatása;
+- sikertelen módszerek és hibamódok dokumentálása annak érdekében, hogy mások elkerülhessék a szükségtelen kockázatokat és az ismételhető hibákat.
 
-- minden D3313-E1 alaplapra;
-- minden FUTRO S930 rendszerre;
-- más D3313 variánsokra;
-- más Fujitsu rendszerekre;
-- más Realtek vezérlőrevíziókra;
-- más firmware-verziókra.
-
-A hardverrevíziók, firmware-verziók, gyártási konfigurációk, alkatrészhelyettesítések és futásidejű állapotok lényegesen módosíthatják a rendszer viselkedését.
-
----
-
-## Bizonyítéki kategóriák
-
-A projekt szükség szerint elkülöníti az alábbi kategóriákat:
-
-```text
-[OFFICIAL]
-[OBSERVED]
-[INFERRED]
-[OPEN QUESTION]
-```
-
-### `[OFFICIAL]`
-
-Gyártói dokumentációból, hivatalos firmware-csomagból, szabványból, upstream szoftverdokumentációból vagy más elsődleges forrásból származó információ.
-
-### `[OBSERVED]`
-
-A vizsgált hardveren közvetlenül mért, kiolvasott, naplózott, kinyert, reprodukált vagy ellenőrzött információ.
-
-### `[INFERRED]`
-
-Több megfigyelés által erősen alátámasztott következtetés, amely azonban önmagában nem közvetlen mérési eredmény.
-
-### `[OPEN QUESTION]`
-
-További bizonyítást, vizsgálatot vagy független reprodukciót igénylő hipotézis, mechanizmus vagy jelenség.
-
-A kategóriák célja, hogy az értelmezés ne jelenjen meg közvetlen mérési tényként.
+A tárhely műszaki esettanulmány és kutatási dokumentáció, nem hivatalos javítási kézikönyv.
 
 ---
 
-## Garancia kizárása
+## 3. Az eredeti kutatás és dokumentáció licence
 
-A repositoryban található minden információ, eljárás, parancs, offset, firmware-megfigyelés, szkript, ábra, konfigurációs példa, kutatási jegyzet és egyéb anyag:
+Eltérő kifejezett jelölés hiányában az ehhez a repozitóriumhoz kifejezetten létrehozott, eredeti és szerzői jogi védelem alatt álló kutatási és dokumentációs anyagok az alábbi licenc alatt kerülnek közzétételre:
 
-> **adott állapotában, bármilyen kifejezett vagy hallgatólagos garancia nélkül**
+**Creative Commons Nevezd meg! – Ne add el! – Így add tovább! 4.0 Nemzetközi  
+(CC BY-NC-SA 4.0)**
 
-kerül közzétételre.
+A teljes, hivatalos licencszöveget a tárhely:
 
-Nem garantálható, hogy:
+**[LICENSE](LICENSE)**
 
-- egy dokumentált eljárás másik rendszeren is működni fog;
-- egy másik D3313 alaplap ugyanezt a firmware-struktúrát használja;
-- ugyanazok az offsetek más firmware-verziókban is érvényesek;
-- a recovery eljárás sikeres lesz;
-- egy másik flash chip azonos módon viselkedik;
-- a hardver működőképes marad;
-- a gépspecifikus adatok megmaradnak;
-- a helyreállítási kísérlet visszafordítható lesz;
-- vagy az itt dokumentált módszerekkel helyreállított rendszer alkalmas lesz éles, üzemi használatra.
+fájlja tartalmazza.
+
+A licencelt anyagokra minden esetben a Creative Commons hivatalos licencfeltételei irányadók.
+
+Gyakorlati értelemben a licenc lehetővé teszi az érintett anyagok nem kereskedelmi célú megosztását és átdolgozását a megfelelő forrásmegjelölési és azonos licenc alatti továbbadási feltételek betartása mellett.
+
+Ez a magyarázó dokumentum nem helyettesíti és nem módosítja a hivatalos licencet.
+
+Amennyiben e dokumentum bármely megfogalmazása ellentmondana a hivatalos CC BY-NC-SA 4.0 licenc jogi szövegének, a ténylegesen CC BY-NC-SA 4.0 alatt licencelt anyagokra a hivatalos Creative Commons licencszöveg az irányadó.
 
 ---
 
-## Maradandó hardverkárosodás kockázata
+## 4. A Creative Commons licenc hatálya
 
-Firmware módosítása és alaplapi beavatkozás végleges hardverkárosodást okozhat.
+A CC BY-NC-SA 4.0 licenc azokra az eredeti, szerzői jogi védelem alatt álló, nem szoftver jellegű anyagokra vonatkozik, amelyeket a repozitórium szerzője ehhez a projekthez készített, ideértve – ahol alkalmazható – az alábbiakat:
+
+- írott kutatási jegyzetek;
+- műszaki magyarázatok;
+- eredeti dokumentációk;
+- eredeti ábrák;
+- eredeti táblázatok;
+- eredeti fényképek;
+- eredeti mérések;
+- eredeti elemzések;
+- eredeti kutatási összefoglalók;
+- eredeti vizsgálati módszerek;
+- eredeti eljárásleírások;
+- eredeti megfigyelések és következtetések.
+
+A licenc kizárólag olyan anyagokra alkalmazható, amelyek tekintetében a repozitórium szerzője rendelkezik a szükséges jogosultságokkal.
+
+Az, hogy egy anyag szerepel ebben a tárhelyben, **nem jelenti automatikusan azt, hogy minden fájl a tárhely szerzőjének tulajdona vagy CC BY-NC-SA 4.0 licenc alatt áll**.
+
+---
+
+## 5. Szoftverek, szkriptek és forráskód
+
+A Creative Commons licencek elsősorban kreatív, oktatási, kutatási és dokumentációs tartalmakhoz készültek, és nem tekintendők elsődleges szoftverlicencnek.
+
+Ennek megfelelően – hacsak egy szoftverfájl vagy könyvtár kifejezetten másként nem rendelkezik –:
+
+**a forráskódok, szkriptek, segédprogramok, alkalmazások, futtatható programok, szoftverkomponensek, build-fájlok és más programkódok nem kerülnek automatikusan CC BY-NC-SA 4.0 licenc alá pusztán azért, mert ebben a repozitóriumban találhatók.**
+
+A projekthez később létrehozott szoftverek külön:
+
+- nyílt forráskódú licenc;
+- source-available licenc;
+- kettős licencelési modell;
+- tulajdonosi licenc;
+- kereskedelmi licenc;
+- vagy más, kifejezetten szoftverekhez kialakított licenc
+
+alatt kerülhetnek közzétételre.
+
+Amennyiben egy fájl vagy könyvtár saját licencnyilatkozatot tartalmaz, arra az adott külön licenc az irányadó.
+
+Amíg az adott szoftverre vonatkozó külön licenc nincs kifejezetten meghatározva, nem szabad abból kiindulni, hogy a repozitóriumban található programkód ugyanazokkal az újrafelhasználási jogokkal rendelkezik, mint a CC-licencelt kutatási dokumentáció.
+
+---
+
+## 6. Kereskedelmi felhasználás és külön licencelés
+
+A CC BY-NC-SA 4.0 licenc nem biztosít engedélyt olyan felhasználásokra, amelyek kívül esnek a licenc NemKereskedelmi feltételein.
+
+A szerzői jog jogosultja az olyan eredeti anyagokra, amelyek tekintetében rendelkezik a szükséges jogokkal, külön további engedélyeket vagy külön kereskedelmi licencet ajánlhat fel.
+
+Egyedileg megtárgyalt engedély vonatkozhat például:
+
+- kereskedelmi kiadványokra;
+- kereskedelmi oktatási anyagokra;
+- fizetős termékekbe vagy szolgáltatásokba történő integrációra;
+- professzionális tanácsadási anyagokra;
+- kereskedelmi műszaki dokumentációra;
+- kereskedelmi adatbázisokra vagy tudásbázisokra;
+- kereskedelmi kutatási termékekre;
+- kereskedelmi szoftverekre vagy szolgáltatásokra, amelyek külön licencelhető eredeti anyagokat használnak.
+
+Az ilyen felhasználás a megfelelő szerzői jogi jogosulttal kötött külön megállapodást igényel.
+
+A külön kereskedelmi feltételek lehetősége nem módosítja a CC BY-NC-SA 4.0 alapján már biztosított jogokat.
+
+A megfelelően megadott Creative Commons licencből származó jogok nem szűnnek meg pusztán azért, mert a szerzői jog jogosultja később ugyanazt a saját anyagot más vagy kereskedelmi feltételek mellett is elérhetővé teszi.
+
+Az eredeti repozitóriumi anyagokra vonatkozó kereskedelmi licencelési kérdésekkel a projekt GitHub-fiókjának tulajdonosához lehet fordulni.
+
+---
+
+## 7. Harmadik féltől származó firmware-ek, BIOS-képek és gyártói anyagok
+
+Ez a megkülönböztetés egy firmware-helyreállítási projekt esetében különösen fontos.
+
+A firmware-ek, BIOS-kódok, gyártói szoftverek, OEM-segédprogramok, frissítőcsomagok, illesztőprogramok, dokumentációk, bináris komponensek, mikrokódok, beágyazott modulok, védjegyek, logók és más harmadik féltől származó anyagok szerzői jogi, védjegyjogi, szabadalmi, szerződéses vagy egyéb jogi védelem alatt állhatnak.
+
+Az ilyen harmadik féltől származó anyagok **nem kerülnek CC BY-NC-SA 4.0 licenc alá ettől a repozitóriumtól** pusztán azért, mert:
+
+- szó esik róluk;
+- elemzés tárgyát képezik;
+- hivatkozás mutat rájuk;
+- azonosításra kerülnek;
+- összehasonlításban szerepelnek;
+- képernyőképen láthatók;
+- elemző leírás részét képezik;
+- jogszerű kutatás során kerültek kinyerésre;
+- vagy más módon említésre kerülnek a tárhelyben.
+
+Különösen a Fujitsu firmware- és BIOS-komponenseire az ezen anyagokra egyébként irányadó jogok és feltételek vonatkoznak.
+
+A repozitórium CC BY-NC-SA 4.0 licence kizárólag azokra az anyagokra terjed ki, amelyek tekintetében a repozitórium szerzője megfelelő jogosultságokkal rendelkezik.
+
+---
+
+## 8. Firmware-mentések és eszközspecifikus adatok
+
+Egy fizikai eszközről készített firmware-mentés több különböző típusú információt tartalmazhat, többek között:
+
+- harmadik fél szerzői jogával védett firmware-kódot;
+- OEM-konfigurációs adatokat;
+- platformkonfigurációt;
+- sorozatazonosítókat;
+- hálózati azonosítókat;
+- gépspecifikus értékeket;
+- kalibrációs információkat;
+- eszközspecifikus beállításokat;
+- vagy más, a hardverből vagy annak gyártójától származó adatot.
+
+Egy firmware-mentés létrehozása vagy elemzése önmagában nem ruházza át a mentésben található harmadik fél szellemi tulajdonához kapcsolódó jogokat.
+
+Ennek megfelelően egy firmware-mentés nem tekinthető automatikusan a repozitórium szerzője eredeti művének vagy CC BY-NC-SA 4.0 alatt licencelt anyagnak.
+
+Amennyiben firmware-képek, kivonatok, hash-értékek, strukturális információk vagy kapcsolódó artefaktumok szerepelnek a dokumentációban, a felhasználó felelőssége annak megállapítása, hogy az alapul szolgáló anyagra milyen jogok és feltételek vonatkoznak.
+
+A gépspecifikus azonosítókat nyilvános terjesztés előtt körültekintően kell kezelni.
+
+---
+
+## 9. Forrásmegjelölés
+
+Ha a repozitórium CC BY-NC-SA 4.0 alatt álló anyagát megosztják vagy átdolgozzák, a forrásmegjelölésnek a licenc követelményeivel összhangban, ésszerű módon azonosítania kell az eredeti projektet és annak szerzőjét vagy a repozitórium tulajdonosát.
+
+Amennyiben észszerűen megoldható, a forrásmegjelölés tartalmazza:
+
+- a repozitórium vagy projekt nevét;
+- a repozitórium tulajdonosát vagy feltüntetett szerzőjét;
+- az eredeti repozitóriumra mutató hivatkozást;
+- a **CC BY-NC-SA 4.0** licencre történő hivatkozást;
+- az alkalmazandó licenc másolatát vagy arra mutató hivatkozást;
+- valamint annak jelzését, ha az anyagon módosítás történt.
+
+A forrásmegjelölés nem keltheti jóváhagyás, támogatás, tanúsítás, partnerség vagy hivatalos kapcsolat látszatát.
+
+---
+
+## 10. Kutatási integritás
+
+A repozitórium célja, hogy lehetőség szerint egyértelműen elkülönítse:
+
+- a közvetlenül megfigyelt tényeket;
+- a mérési eredményeket;
+- a reprodukálható eljárásokat;
+- az értelmezéseket;
+- a hipotéziseket;
+- a külső forrásból származó információkat;
+- és a még bizonytalan következtetéseket.
+
+A kutatási állításokat lehetőség szerint az alábbiak valamelyikével kell alátámasztani:
+
+- mérések;
+- firmware-hash-ek;
+- fényképek;
+- naplók;
+- eszközkimenetek;
+- reprodukálható eljárások;
+- elsődleges dokumentációk;
+- vagy egyértelműen megjelölt külső források.
+
+Egy sikertelen kísérlet is dokumentálható, amennyiben műszaki szempontból hasznos információt tartalmaz.
+
+A történeti kutatási jegyzetek ezért olyan eljárásokat is leírhatnak, amelyek alkalmazása jelenleg már nem ajánlott.
+
+Egy eljárás megismétlése előtt mindig figyelembe kell venni annak kontextusát és aktuális státuszát.
+
+---
+
+## 11. Biztonság és hardverkockázat
+
+A firmware-programozás, BIOS-módosítás, közvetlen flash-hozzáférés, forrasztás, kiforrasztás, hőlégfúvós javítás, feszültségmérés, alaplapi diagnosztika és hasonló eljárások tartósan károsíthatják a hardvert.
 
 Lehetséges következmények többek között:
 
-- bootképtelen rendszer;
-- sérült SPI-firmware;
-- sérült flash-tároló;
-- sérült alaplapi alkatrész;
-- sérült tápellátási áramkör;
-- sérült perifériavezérlő;
-- firmware-konfiguráció elvesztése;
-- alaplapspecifikus adatok elvesztése;
-- recovery lehetőség elvesztése.
+- nem induló rendszer;
+- sérült firmware;
+- tönkrement flashmemória;
+- károsodott alaplapi alkatrészek;
+- programozó vagy mérőeszköz meghibásodása;
+- adatvesztés;
+- elektromos károsodás;
+- túlmelegedés;
+- égési sérülés vagy más személyi sérülés.
 
-Helytelen feszültség, bekötés, programozókonfiguráció, csipeszorientáció, flash-chip kiválasztás vagy írási művelet véglegesen károsíthatja az eszközt.
+A tárhelyben ismertetett eljárásokat kizárólag olyan személy végezze, aki tisztában van az adott művelet kockázataival.
 
-A hasonló munkát végző személy felelőssége saját hardvere elektromos és firmware-jellemzőinek megértése.
+Lehetőség szerint mindig a biztonsági mentést és a roncsolásmentes diagnosztikai módszereket kell előnyben részesíteni.
 
----
+Az áramellátást minden olyan esetben le kell választani, amikor azt az adott eljárás és az elektromos körülmények megkövetelik.
 
-## Adat- és gépazonosság elvesztésének kockázata
-
-A firmware-tárolók olyan gépspecifikus információkat tartalmazhatnak, amelyek nem találhatók meg a generikus gyártói firmware-image-ekben.
-
-Ilyenek lehetnek például:
-
-- sorozatszámok;
-- UUID-k;
-- PC ID-k;
-- MAC-címek;
-- OEM/manufacturing adatok;
-- licencinformációk;
-- platformspecifikus konfiguráció;
-- kalibrációs értékek;
-- kriptográfiai vagy biztonsági jellegű adatok;
-- más eszközspecifikus metaadatok.
-
-Egy generikus firmware-image visszaállíthatja a bootképességet anélkül, hogy helyreállítaná egy konkrét gép teljes azonosságát vagy konfigurációját.
-
-Ezért a repository nyomatékosan javasolja az eredeti firmware ellenőrzött példányainak megőrzését minden módosítás előtt.
+A repozitórium nem helyettesíti a megfelelő műszaki szaktudást, az elektromos biztonsági gyakorlatot, a gyártói dokumentációt vagy a professzionális javítószolgáltatást.
 
 ---
 
-## Mentési módszertan
+## 12. Szavatosság kizárása
 
-Egyetlen látszólag sikeres firmware-kiolvasás nem tekinthető automatikusan megbízható biztonsági mentésnek.
+A repozitórium anyagai kutatási, dokumentációs, oktatási, javítási, interoperabilitási és tájékoztatási célokat szolgálnak.
 
-A biztonságosabb munkafolyamat lehetőség szerint:
+A vonatkozó jog által megengedett legteljesebb mértékben az anyagok **„AHOGY VAN”** és **„AHOGY ELÉRHETŐ”** állapotban kerülnek rendelkezésre bocsátásra, bármilyen kifejezett vagy hallgatólagos szavatosság vagy garancia nélkül.
 
-```text
-OLVASD KI
-  ↓
-OLVASD KI ÚJRA
-  ↓
-HASONLÍTSD ÖSSZE
-  ↓
-HASH-ELD
-  ↓
-ARCHIVÁLD
-  ↓
-ELEMEZD
-  ↓
-CSAK EZUTÁN ÍRJ
-```
+Nincs garancia arra, hogy:
 
-A független kiolvasásokat össze kell hasonlítani és kriptográfiai hash-sel ellenőrizni.
+- egy dokumentált eljárás másik eszközön is működni fog;
+- eltérő hardverrevíziók azonos módon viselkednek;
+- egy firmware-kép másik géphez megfelelő;
+- egy külső forrás továbbra is pontos vagy elérhető;
+- egy adott eszköz különböző verziói azonosan működnek;
+- vagy egy eljárás hibamentes és kockázatmentes.
 
-Az eredeti dumpokat változatlanul kell megőrizni.
-
-A módosított firmware-image-eket külön kell tárolni az eredeti bizonyítékoktól.
+A felhasználónak minden eljárást önállóan ellenőriznie kell, mielőtt azt hardveren, szoftveren, firmware-en, hálózaton vagy értékes adatokon alkalmazná.
 
 ---
 
-## Visszafordíthatatlan és korlátozottan írható tárolók
+## 13. Felelősség korlátozása
 
-Különös óvatosság szükséges az alábbiak esetében:
+A vonatkozó jog által megengedett legteljesebb mértékben a repozitórium szerzője, közreműködői és szerzői jogi jogosultjai nem vállalnak felelősséget a tárhelyben található információk vagy eljárások felhasználásából eredő károkért vagy veszteségekért.
 
-- eFuse;
-- OTP memória;
-- egyszer programozható konfiguráció;
-- security fuse;
-- hardverazonosságot tároló fuse;
-- egyéb korlátozottan írható vagy visszafordíthatatlan tároló.
+Ide tartozhat többek között:
 
-Az ilyen tárolók programozása végleges lehet.
+- hardverkárosodás;
+- firmware-sérülés;
+- adatvesztés;
+- eszközkonfiguráció elvesztése;
+- szolgáltatás vagy rendelkezésre állás elvesztése;
+- gazdasági kár;
+- bevételkiesés;
+- garanciális jogosultság elvesztése;
+- vagy más közvetlen vagy közvetett következmény.
 
-Az itt dokumentált vizsgálat során tudatosan elkerültük a Realtek eFuse programozását, miután a bizonyítékok arra utaltak, hogy ez nem az eredeti Fujitsu platformmechanizmus helyreállítását jelentette volna.
+Az anyagok felhasználása a felhasználó saját kockázatára történik.
 
-Visszafordíthatatlan tároló módosítása előtt tisztázni kell:
-
-- pontosan milyen adat kerül beírásra;
-- hogyan működik elektromosan az adott tároló;
-- visszafordítható-e a művelet;
-- az eredeti platform valóban ezt a tárolási mechanizmust használta-e;
-- létezik-e kevésbé invazív helyreállítási lehetőség.
+Ez a rendelkezés nem korlátoz olyan felelősséget, amelynek korlátozását az alkalmazandó jog nem teszi lehetővé.
 
 ---
 
-## A minimális beavatkozás elve
+## 14. Jogszerű és engedélyezett felhasználás
 
-A projekt általános módszertani elve:
+A firmware-ekkel, visszafejtéssel, diagnosztikával, hálózatokkal, informatikai biztonsággal, digitális forenzikával, hardverprogramozással vagy rendszerelemzéssel kapcsolatos anyagok jogszerű célokat szolgálnak, például:
 
-> **Csak azt a legkisebb firmware-régiót módosítsuk, amelyről a bizonyítékok alapján kimutatható, hogy módosításra szorul.**
+- kutatást;
+- javítást;
+- helyreállítást;
+- oktatást;
+- interoperabilitást;
+- védekező célú elemzést;
+- dokumentálást;
+- megőrzést;
+- és engedélyezett tesztelést.
 
-Ez a megközelítés csökkenteni kívánja az olyan, a konkrét hibához nem feltétlenül kapcsolódó firmware-állapotok szükségtelen módosítását, mint:
+A repozitórium semmilyen része nem biztosít felhatalmazást olyan rendszerek, eszközök, fiókok, kommunikációk, hálózatok vagy adatok elérésére, módosítására, megfigyelésére, működésük akadályozására, védelmeik megkerülésére vagy elemzésére, amelyek tekintetében a felhasználó nem rendelkezik a szükséges joggal vagy engedéllyel.
 
-- futásidejű NVRAM;
-- bootváltozók;
-- recovery-állapot;
-- manufacturing adatok;
-- számlálók;
-- ismeretlen firmware-struktúrák.
+A felhasználó felelőssége a vonatkozó:
 
-Az elv csökkenti a szükségtelen beavatkozás mértékét, de nem szünteti meg a kockázatot.
+- jogszabályok;
+- szabályozások;
+- licencek;
+- szerződések;
+- adatvédelmi követelmények;
+- engedélyezési követelmények;
+- és harmadik személyek jogainak
 
----
-
-## Adatvédelem és gépspecifikus információk
-
-A nyers firmware-image-eket potenciálisan érzékeny műszaki bizonyítékként kell kezelni.
-
-Tartalmazhatnak például:
-
-- sorozatszámokat;
-- MAC-címeket;
-- UUID-ket;
-- PC ID-ket;
-- manufacturing azonosítókat;
-- HDCP-hoz kapcsolódó információkat;
-- licencadatokat;
-- platformkonfigurációt;
-- biztonsági jellegű metaadatokat;
-- ismeretlen gépspecifikus struktúrákat.
-
-Ezért a vizsgált rendszer személyre szabott nyers firmware-image-eit a repository szándékosan nem terjeszti nyilvánosan.
+betartása.
 
 ---
 
-## Kriptográfiai hash-ek és proveniencia
+## 15. Külső források és hivatkozások
 
-Kriptográfiai hash-ek közzétehetők:
+A külső dokumentációk, cikkek, fórumbejegyzések, forráskódok, műszaki beszélgetések, gyártói dokumentumok és egyéb hivatkozott források a saját licenceik és jogi feltételeik hatálya alá tartoznak.
 
-- proveniencia;
-- reprodukálhatóság;
-- artefaktumazonosítás;
-- későbbi összehasonlítás
+Egy hivatkozás vagy link nem jelenti a hivatkozott anyag tulajdonjogának megszerzését.
 
-céljából.
+Ha külső forrásból származó anyag idézési jog, licenc, engedély, jogszabályi kivétel vagy korlátozás alapján kerül felhasználásra, az alapul szolgáló jogok továbbra is az eredeti jogosultat illetik.
 
-A kriptográfiai digest lehetővé teszi annak megállapítását, hogy egy másik bináris fájl bitre pontosan azonos-e egy kutatási artefaktummal, anélkül hogy magát az artefaktumot közzé kellene tenni.
-
-A hash közzététele nem jelenti az alapjául szolgáló firmware-image közzétételét.
+Az ilyen harmadik féltől származó anyagokat újrafelhasználni kívánó személynek az eredeti forrást és annak alkalmazandó feltételeit kell megvizsgálnia.
 
 ---
 
-## Képernyőképek, fényképek, logok és média
+## 16. Közreműködések
 
-Képek, képernyőképek, felvételek, naplók és terminálkimenetek is tartalmazhatnak azonosításra alkalmas információkat.
+A közreműködők eltérő kifejezett megállapodás hiányában megtartják saját hozzájárulásaik szerzői jogát.
 
-Példák:
+A közreműködés kizárólag olyan anyagot tartalmazhat, amelynek benyújtására a közreműködő jogosult.
 
-- felhasználónevek;
-- helyi fájlútvonalak;
-- IP-címek;
-- MAC-címek;
-- sorozatszámok;
-- UUID-k;
-- eszközfeliratok;
-- matricák;
-- QR-kódok;
-- vonalkódok;
-- EXIF metaadatok;
-- GPS metaadatok;
-- háttérben látható dokumentumok vagy tárgyak.
+Egy hozzájárulás repozitóriumba történő elfogadása önmagában nem ruházza át annak szerzői jogát a repozitórium tulajdonosára.
 
-Ezért minden nyilvánosságra kerülő bizonyítékot publikálás előtt ellenőrizni és szükség esetén anonimizálni kell.
+Ha egy hozzájárulást a CC BY-NC-SA 4.0 alatt álló dokumentáció részének szánnak, a közreműködőnek biztosítania kell, hogy jogosult az anyagot ilyen vagy kompatibilis feltételek mellett rendelkezésre bocsátani.
 
-A nyers médiafájlokat nem szabad automatikusan nyilvános terjesztésre biztonságosnak tekinteni.
+A szoftveres hozzájárulásokra külön szoftverlicenc vonatkozhat, amint az adott projektrész számára ilyen licenc meghatározásra kerül.
 
 ---
 
-## Véletlen adatközlés
+## 17. Külön és jövőbeni licencelés
 
-Gondos ellenőrzés mellett is előfordulhat gépspecifikus vagy személyes információ véletlen közzététele.
+A szerzői jog jogosultja az olyan anyagok tekintetében, amelyekhez rendelkezik a szükséges jogokkal, fenntartja a lehetőséget arra, hogy:
 
-Ilyen eset észlelésekor felelős értesítés javasolt annak érdekében, hogy a repository javítható legyen.
+- jövőbeni változatokat más feltételek mellett terjesszen;
+- további engedélyeket biztosítson;
+- külön kereskedelmi megállapodásokat kössön;
+- kettős licencelést alkalmazzon;
+- a szoftvert külön, szoftverspecifikus licenc alatt tegye közzé;
+- a jövőbeni példányok terjesztését megszüntesse;
+- vagy további anyagokat más licenc alatt publikáljon.
 
-Mivel a Git verziótörténetet őriz, a nyilvános repositoryk pedig klónozhatók, forkolhatók, archiválhatók és indexelhetők, egy adat eltávolítása az aktuális repositoryból nem garantálja, hogy a korábban közzétett információ minden példányból eltűnik.
+Ezek a döntések nem vonják vissza visszamenőlegesen a korábban, érvényesen megadott Creative Commons licenc alapján már megszerzett jogokat.
 
----
-
-## Harmadik féltől származó szoftverek és eszközök
-
-A projekt többek között az alábbi külső szoftverekre és eszközökre hivatkozik:
-
-- flashrom;
-- UEFITool;
-- IMSProg;
-- Linux;
-- systemd;
-- Realtek diagnosztikai segédprogramok;
-- Realtek PGTool-kompatibilis eszközök;
-- közösségi fejlesztésű segédprogramok.
-
-Ezek a projektek saját:
-
-- szerzői jogaikat;
-- licenceiket;
-- dokumentációjukat;
-- garanciális feltételeiket;
-- biztonsági szabályaikat
-
-megtartják.
-
-Az itt történő hivatkozás vagy használat nem jelent tulajdonjogot, gyártói jóváhagyást vagy automatikus továbbterjesztési jogosultságot.
-
-A hiteles licenc- és használati feltételekért mindig az eredeti projekt vagy gyártó dokumentációját kell figyelembe venni.
+Harmadik féltől származó anyagot a repozitórium tulajdonosa csak akkor licencelhet újra, ha erre megfelelő jogosultsággal rendelkezik.
 
 ---
 
-## Harmadik féltől származó firmware és zárt anyagok
+## 18. Az alkalmazandó feltételek elsőbbsége
 
-A repository nem kíván zárt, gyártói firmware-t újraterjeszteni, kivéve ha annak továbbterjesztése kifejezetten engedélyezett.
+Az eredeti, kifejezetten CC BY-NC-SA 4.0 alatt közzétett anyagokra a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International hivatalos licencszövege az irányadó.
 
-A hivatalos firmware-csomagokra kizárólag:
+A külön licencnyilatkozatot tartalmazó szoftverekre és fájlokra az adott külön licenc alkalmazandó.
 
-- azonosítás;
-- összehasonlítás;
-- kutatási kontextus;
-- reprodukálhatóság
+Harmadik féltől származó anyagokra a megfelelő jogtulajdonos jogai és feltételei irányadók.
 
-céljából történik hivatkozás.
-
-A vizsgált rendszer gépspecifikus firmware-dumpjai kutatási bizonyítéknak minősülnek, és alapértelmezés szerint nem kerülnek nyilvános terjesztésre.
-
-A felhasználó felelőssége, hogy a firmware-eket és szoftvereket jogszerű forrásból szerezze be és betartsa a vonatkozó licencfeltételeket.
+Ez a dokumentum a repozitórium szerkezetének és licencelési határainak egyértelművé tételét szolgálja, és nem helyettesíti az alkalmazandó licenceket.
 
 ---
 
-## Szerzői jog és forrásmegjelölés
+## 19. Kapcsolat
 
-A projekt nem állítja sajátjának mások által létrehozott:
-
-- technikákat;
-- segédprogramokat;
-- firmware-formátumokat;
-- szabványokat;
-- korábbi kutatásokat.
-
-A releváns korábbi munkák, gyártói dokumentációk, szoftverprojektek és közösségi kutatások a:
-
-```text
-SOURCES.md
-```
-
-fájlban szerepelnek megfelelő forrásmegjelöléssel.
-
-A projekt saját hozzájárulása ezen módszerek dokumentált alkalmazása, kombinációja, ellenőrzése és értelmezése a vizsgált D3313-E1 esetben.
+A kutatással, forrásmegjelöléssel, eredeti anyagok újrafelhasználására vonatkozó engedéllyel vagy esetleges kereskedelmi licenceléssel kapcsolatos kérdésekkel a repozitórium tulajdonosához lehet fordulni a projekthez tartozó GitHub-fiókon keresztül.
 
 ---
 
-## Felelős felhasználás
+**A repozitórium licencelési struktúrája**
 
-Az itt dokumentált eljárások olyan hardverre vonatkoznak, amelyet:
-
-- a kutató birtokol;
-- a kutató ellenőriz;
-- vagy amelyet jogszerűen bíztak rá vizsgálatra vagy javításra.
-
-A repository semmilyen módon nem értelmezhető felhatalmazásként:
-
-- engedély nélküli rendszerbeavatkozásra;
-- harmadik fél hardverének megzavarására;
-- hozzáférés-védelem jogosulatlan megkerülésére;
-- bizalmas információ engedély nélküli megszerzésére;
-- hardverazonosság megtévesztő vagy jogellenes módosítására.
-
-A projekt jogszerű firmware-helyreállítással, hardvermegőrzéssel és műszaki elemzéssel foglalkozik.
+- **Eredeti kutatás és dokumentáció:** CC BY-NC-SA 4.0, eltérő jelölés hiányában
+- **Hivatalos licencszöveg:** `LICENSE`
+- **Szoftver és forráskód:** külön licenc szerint, ahol ez kifejezetten meghatározásra kerül
+- **Harmadik féltől származó firmware-ek és anyagok:** a jogaik az eredeti jogosultaknál maradnak
+- **Saját, erre jogosult eredeti anyagok kereskedelmi licencelése:** kizárólag külön megállapodás alapján, amennyiben ilyen licencet a jogosult felajánl
 
 ---
 
-## Biztonsági kutatási kontextus
+Copyright © 2026, a repozitórium szerzője és az egyes közreműködők saját eredeti hozzájárulásaik tekintetében.
 
-A firmware-kutatási módszerek részben átfedhetnek számítógép-biztonsági technikákkal.
-
-Ezek szerepeltetésének célja:
-
-- védekező kutatás;
-- javítás;
-- hardvermegőrzés;
-- interoperabilitás;
-- diagnosztika;
-- platformműködés megértése.
-
-Minden felhasználó saját felelőssége, hogy tevékenysége megfeleljen a vonatkozó jogszabályoknak, szerződéses feltételeknek és engedélyezési határoknak.
-
----
-
-## Nem minősül biztonsági tanúsításnak
-
-Az itt dokumentált eljárások nem rendelkeznek biztonsági tanúsítással.
-
-A repository nem igazolja:
-
-- az elektromos biztonságot;
-- az elektromágneses megfelelőséget;
-- az üzemi alkalmazhatóságot;
-- a jogszabályi megfelelést;
-- a hardver hosszú távú megbízhatóságát.
-
-Különös körültekintés szükséges:
-
-- feszültség alatt álló alaplapok;
-- külső programozók;
-- szabadon hozzáférhető vezetők;
-- módosított tápegységek;
-- háttértárak;
-- forrasztó- és hőlégfúvó berendezések
-
-használatakor.
-
----
-
-## Nem minősül mérnöki hitelesítésnek
-
-Ez a repository műszaki kutatási dokumentáció.
-
-Nem tekinthető:
-
-- hivatalos mérnöki tanúsításnak;
-- gyártói szervizengedélynek;
-- hivatalos javítási dokumentációnak;
-- biztonsági minősítésnek;
-- garanciális útmutatásnak;
-- jogi tanácsnak.
-
-Szabályozott, biztonságkritikus, kereskedelmi vagy üzemi rendszereknél független szakértői felülvizsgálatra lehet szükség.
-
----
-
-## Ellentmondó kísérleti eredmények
-
-Ha egy későbbi vizsgálat ellentmond a repository valamely következtetésének, az önmagában nem jelenti azt, hogy a reprodukciót végző személy hibázott.
-
-Lehetséges magyarázatok többek között:
-
-- hardverrevíziók közötti eltérés;
-- firmware-verziók közötti eltérés;
-- gyártási variáció;
-- nem dokumentált konfiguráció;
-- alkatrészhelyettesítés;
-- a jelenlegi értelmezés hibája.
-
-Az ellentmondó eredmények értékes kutatási bizonyítéknak számítanak.
-
----
-
-## Javítások és független reprodukció
-
-A projekt szívesen fogad:
-
-- műszaki javításokat;
-- független reprodukciókat;
-- negatív eredményeket;
-- ellentmondó megfigyeléseket;
-- új bizonyítékokat.
-
-Ha új bizonyíték megváltoztat egy korábbi értelmezést, a repository frissíthető.
-
-A Git verziótörténetének célja, hogy megőrizze a kutatási dokumentáció fejlődését.
-
----
-
-## A következtetések hatóköre
-
-A repository legerősebb következtetései a konkrétan vizsgált D3313-E1 rendszerre vonatkoznak mindaddig, amíg további reprodukció másképp nem bizonyítja.
-
-A vizsgált gép esetében a bizonyítékok többek között az alábbiakra vonatkoznak:
-
-- az eredeti SPI-image-re;
-- az OEM-régióra;
-- a Realtek eFuse állapotára;
-- a recovery utáni firmware-re;
-- a szelektív helyreállítás eredményére.
-
-Ezeket a megfigyeléseket nem szabad automatikusan a teljes termékcsaládra általánosítani.
-
----
-
-## Külső hivatkozások
-
-A repository hivatkozásokat tartalmazhat:
-
-- gyártói dokumentációkra;
-- szabványokra;
-- szoftverprojektekre;
-- műszaki dokumentációkra;
-- közösségi fórumokra;
-- korábbi kutatásokra.
-
-A külső tartalmak idővel módosulhatnak, áthelyezhetők vagy megszűnhetnek.
-
-Egy link szerepeltetése nem jelenti a hivatkozott oldal minden állításának jóváhagyását.
-
-A közösségi forrásokat a projekt tudatosan elkülöníti a gyártói dokumentációtól és a saját közvetlen kísérleti bizonyítékoktól.
-
----
-
-## A repository jövőbeli bővítése
-
-A repository később további tartalmakkal bővülhet, például:
-
-- képernyőképekkel;
-- diagramokkal;
-- anonimizált bináris részletekkel;
-- szkriptekkel;
-- reprodukálhatósági eszközökkel;
-- recovery dokumentációval;
-- kutatási jegyzetekkel;
-- független reprodukciókkal.
-
-A jövőbeni tartalmakra ugyanazok az adatvédelmi, forrásmegjelölési, bizonyítéki és biztonsági alapelvek vonatkoznak.
-
----
-
-## Kapcsolat
-
-Műszaki javításokkal, reprodukciós eredményekkel vagy véletlenül közzétett érzékeny információ felelős jelzésével kapcsolatban:
-
-**Bencze Péter**  
-**E-mail:** bencze.peter86@proton.me
-
----
-
-## Záró figyelmeztetés
-
-Az, hogy a vizsgált rendszeren sikeres helyreállítás történt, nem jelenti azt, hogy az eljárás általánosan biztonságos.
-
-A munka reprodukálása előtt meg kell érteni a konkrét hardvert, egymástól függetlenül ellenőrzött mentéseket kell készíteni, és minden firmware-írást potenciálisan destruktív műveletként kell kezelni.
-
-Az itt közölt anyag kizárólag saját jogosultsági kereteken belül, megfelelő műszaki felkészültséggel és a kockázatok tudatos vállalásával használható.
+A harmadik felek szerzői jogai, védjegyei, firmware-ei, szoftverei, dokumentációi és más védett anyagai továbbra is a megfelelő jogosultak tulajdonában maradnak.
