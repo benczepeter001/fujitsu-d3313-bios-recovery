@@ -1,4 +1,5 @@
-# Fujitsu FUTRO S930 / D3313-E1  
+# Fujitsu FUTRO S930 / D3313-E1
+
 ## BIOS-helyreállítás, firmware-elemzés és a gépspecifikus OEM-azonosság visszaállítása
 
 ### Forenzikus szemléletű műszaki esettanulmány egy Fujitsu D3313-E1 alaplap firmware-helyreállításáról és platformazonosságának rekonstrukciójáról
@@ -9,107 +10,161 @@
 
 ---
 
-## Összefoglaló
+## Projekt-navigáció
 
-Ez a repository egy Fujitsu D3313-E1 alaplapra épülő Fujitsu FUTRO S930 vékonykliens forenzikus szemléletű vizsgálatát és helyreállítását dokumentálja.
+- [Angol dokumentáció](README.md)
+- [Források és korábbi munkák](SOURCES.md)
+- [Jogi és kutatási nyilatkozat](DISCLAIMER.md)
+- [Magyar jogi nyilatkozat](DISCLAIMER.hu.md)
+- [Licenc](LICENSE)
+- [Hivatkozási metaadatok](CITATION.cff)
 
-A rendszer működésképtelen állapotban került a vizsgálatba. A rendelkezésre álló előzmények szerint közvetlenül a meghibásodás előtt processzor-újrapasztázási kísérlet történt, amelynek során a hűtőegységet eltávolították, az alaplap hátoldalán található fém rögzítőlemez pedig elmozdult. Mivel a processzor környezetét a visszaszerelési próbálkozások során jelentős mechanikai nyomás érhette, a kezdeti hibát nem lehetett biztonsággal firmware-problémának tekinteni. Mechanikai sérülés, tápellátási hiba, alaplapi meghibásodás, SPI-firmware sérülés vagy ezek kombinációja egyaránt lehetséges magyarázat maradt.
+---
 
-A vizsgálat ezért nem a hagyományos „írjuk újra a BIOS-t és nézzük meg” megközelítést követte, hanem bizonyíték-alapú hibakeresési módszert.
+# Összefoglaló
 
-A folyamat része volt több alkalommal végzett alaplapi elektromos mérés, CH341A programozóval végzett külső SPI-kiolvasás, két egymástól független 8 MiB-os firmware-dump kriptográfiai ellenőrzése, hivatalos Fujitsu firmware-rel való összehasonlítás, UEFI Firmware Volume- és FFS-elemzés, Fujitsu recovery-kísérletek, DOS alatti Realtek-diagnosztika, közvetlen Realtek eFuse-vizsgálat, Linux alatti belső SPI-kiolvasás, blokk- és byte-szintű firmware-összehasonlítás, végül pedig egyetlen 64 KiB-os SPI-régió szelektív, működő rendszerből történő visszaállítása.
+Ez a repozitórium egy Fujitsu D3313-E1 alaplapra épülő Fujitsu FUTRO S930 vékonykliens forenzikus szemléletű vizsgálatát és helyreállítását dokumentálja.
+
+A rendszer működésképtelen állapotban került vizsgálatra. A rendelkezésre álló előzmény szerint közvetlenül a meghibásodás előtt processzor-újrapasztázási kísérlet történt, amelynek során a hűtőegységet és az alaplap hátoldalán található fém rögzítőlemezt eltávolították. Mivel a processzor környezetét a visszaszerelési próbálkozások során jelentős mechanikai nyomás érhette, a kezdeti hibát nem lehetett kizárólag firmware-problémának tekinteni.
+
+Mechanikai sérülés, tápellátási hiba, alaplapi meghibásodás, sérült SPI-firmware vagy ezek kombinációja egyaránt lehetséges magyarázat maradt.
+
+A vizsgálat ezért nem a hagyományos „írjuk újra a BIOS-t és nézzük meg” megközelítést követte, hanem bizonyíték-alapú módszertant.
+
+A folyamat része volt:
+
+- ismételt alaplapi elektromos mérés;
+- külső SPI-kiolvasás CH341A programozóval;
+- két egymástól független 8 MiB-os firmware-kiolvasás;
+- kriptográfiai hash-ellenőrzés;
+- összehasonlítás hivatalos Fujitsu firmware-rel;
+- UEFI Firmware Volume és FFS-elemzés;
+- Fujitsu recovery-mode kísérletek;
+- DOS-alapú Realtek-diagnosztika;
+- közvetlen Realtek eFuse-vizsgálat;
+- Linux alatti belső SPI-kiolvasás;
+- firmware blokkszintű összehasonlítás;
+- valamint egyetlen 64 KiB-os régió szelektív, működő rendszerből történő visszaállítása.
 
 A vizsgálat során több jelentős eredmény született.
 
-Az eredeti gép SPI-image-e és a megfelelő hivatalos Fujitsu R1.16 firmware **128 darab 64 KiB-os blokkból 127-ben teljesen azonosnak bizonyult**. A teljes gépspecifikus eltérés egyetlen 64 KiB-os OEM/manufacturing régióban koncentrálódott:
+Az eredeti gép SPI-image-e és a megfelelő hivatalos Fujitsu R1.16 firmware **128 darab 64 KiB-os blokkból 127-ben teljesen azonosnak bizonyult**.
+
+A teljes gépspecifikus eltérés egyetlen 64 KiB-os OEM/manufacturing régióban koncentrálódott:
 
 ```text
 0x440000–0x44FFFF
 ```
 
-Ez a régió több gépspecifikus mezőt tartalmazott, köztük két egymással nagyrészt redundáns struktúrát, amelyekben szerepelt a `MAC Address #0` mező is. A gyári Fujitsu firmware ezen a helyen `FF:FF:FF:FF:FF:FF` template-értéket tartalmazott, míg az eredeti gép dumpjában a tényleges Fujitsu által hozzárendelt MAC-cím szerepelt.
+Ebben a régióban több gépspecifikus mező szerepelt, köztük két olyan struktúra, amely tartalmazta:
 
-A sikeres Fujitsu BIOS recovery után a rendszer újra POST-olt és bootolt, a hálózati vezérlő azonban elvesztette állandó MAC-azonosságát. A DOS alatti Realtek-diagnosztika nem talált érvényes külső EEPROM-ot, míg a Linux alatti közvetlen PGTool-vizsgálat látszólag programozatlan eFuse-t mutatott:
+```text
+MAC Address #0
+```
+
+mezőt.
+
+A hivatalos firmware-ben ennek értéke:
+
+```text
+FF:FF:FF:FF:FF:FF
+```
+
+volt, míg az eredeti gép dumpjában a tényleges Fujitsu által kiosztott Ethernet-azonosító szerepelt.
+
+A Fujitsu BIOS-helyreállítás után a rendszer ismét POST-olt és bootolt, de a hálózati vezérlő elvesztette állandó MAC-azonosságát.
+
+A DOS-alapú Realtek-diagnosztika nem talált érvényes külső EEPROM-ot, míg a közvetlen Linux PGTool-vizsgálat látszólag soha nem programozott eFuse-t mutatott:
 
 ```text
 Efuse Write Count = 0
 ```
 
-A recovery utáni fizikai SPI-tartalom belső kiolvasása ezután megmutatta, hogy a gépspecifikus OEM MAC-mező visszaállt a gyári `FF` template-értékre.
+A helyreállítás utáni belső SPI-dump ezután azt mutatta, hogy a gépspecifikus OEM MAC-mező visszaállt a gyári `FF` sablonértékre.
 
-A Realtek eFuse végleges programozása helyett megtartottuk a működő recovery utáni firmware-állapotot, és kizárólag az eredeti 64 KiB-os OEM-régiót állítottuk vissza. A szelektív írás után a fizikai flash tartalmát külön verify művelettel is ellenőriztük.
+A Realtek eFuse végleges programozása helyett megőrzésre került a működő recovery-állapotú firmware, és kizárólag az eredeti 64 KiB-os OEM-régió került visszaírásra.
 
-Hidegindítás után a BIOS ismét az eredeti Fujitsu LAN-címet mutatta, és a Linux is visszakapta a hozzá tartozó állandó hálózati azonosságot.
+A szelektív írás fizikai flash-szinten külön ellenőrzésre került.
 
-A bizonyítékok ezért azt a modellt támasztják alá, hogy a vizsgált D3313-E1 rendszeren a Realtek vezérlő gépspecifikus MAC-azonosságát a Fujitsu platformfirmware inicializálja, nem pedig a vezérlő korábban programozott eFuse-tartalmából származik.
+Hidegindítás után a BIOS ismét az eredeti Fujitsu LAN-azonosságot mutatta, Linux alatt pedig helyreállt a megfelelő állandó hálózati identitás.
 
-A projekt egy általánosabb firmware-helyreállítási elvet is szemléltet:
+A bizonyítékok ezért azt a modellt támasztják alá, hogy a vizsgált D3313-E1 rendszerben a Realtek vezérlő gépspecifikus Ethernet-azonosságát a Fujitsu platformfirmware biztosítja, nem pedig korábban programozott Realtek eFuse.
 
-> **Csak azt a legkisebb firmware-régiót állítsuk vissza, amelyről bizonyítottuk, hogy valóban módosításra szorul, ahelyett hogy alapértelmezésként a teljes image-et újraírnánk.**
+A projekt általánosabb firmware-javítási tanulsága:
 
----
-
-## Kulcsszavak
-
-Fujitsu D3313-E1 · FUTRO S930 · BIOS recovery · UEFI · SPI flash · firmware forensics · OEM-adatok · manufacturing adatok · flashrom · CH341A · MX25L6473F · Realtek RTL8168G · MAC-cím · eFuse · firmware-helyreállítás · forenzikus firmware-elemzés
+> **Mindig a lehető legkisebb, bizonyítottan helyreállításra szoruló régiót módosítsuk, ne pedig alapértelmezésként az egész firmware-image-et írjuk újra.**
 
 ---
 
-# 1. A vizsgálat célja és hatóköre
+# Kulcsszavak
 
-A projekt eredetileg egy működésképtelennek tűnő Fujitsu FUTRO S930 javítási kísérleteként indult.
+Fujitsu D3313-E1 · Fujitsu FUTRO S930 · BIOS-helyreállítás · UEFI · SPI flash · firmware forenzika · OEM-adatok · manufacturing adatok · flashrom · CH341A · MX25L6473F · Realtek RTL8168G · MAC-cím · eFuse · firmware-helyreállítás · forenzikus firmware-elemzés
 
-A munka akkor alakult át strukturált firmware-vizsgálattá, amikor világossá vált, hogy a rendszer alapvető bootolhatóságának helyreállítása önmagában nem állította vissza a gép eredeti azonosságát és konfigurációját.
+---
 
-A vizsgálat fő céljai ezért a következők lettek:
+# 1. Hatókör és célok
 
-1. megállapítani, bizonyítható-e firmware-eredetű hiba úgy, hogy közben nem zárjuk ki idő előtt a mechanikai és elektromos okokat;
+A projekt eredetileg egy látszólag meghibásodott Fujitsu FUTRO S930 javításaként indult.
+
+A munka strukturált firmware-vizsgálattá vált, amikor világossá vált, hogy a bootképesség helyreállítása önmagában nem állítja vissza automatikusan az adott gép eredeti identitását és konfigurációját.
+
+A fő célok:
+
+1. megállapítani, hogy firmware-rel kapcsolatos hiba bizonyítható-e anélkül, hogy mechanikai vagy elektromos okokat idő előtt kizárnánk;
 2. megbízható másolatot készíteni az eredeti SPI-firmware-ről;
-3. összehasonlítani a konkrét gép firmware-ét a megfelelő hivatalos Fujitsu firmware-rel;
-4. azonosítani a gépspecifikus régiókat, és ahol lehetséges, meghatározni azok funkcióját;
-5. a dokumentált recovery mechanizmus segítségével helyreállítani a POST- és bootképességet;
-6. megvizsgálni, miért veszítette el a hálózati vezérlő az állandó MAC-azonosságát a recovery után;
-7. meghatározni, hogy ez az azonosító a Realtek EEPROM/eFuse tárolójából vagy a Fujitsu platformfirmware-ből származik-e;
-8. helyreállítani az eredeti gépspecifikus konfigurációt a lehető legkisebb SPI-régió módosításával;
-9. olyan reprodukálható bizonyítéki láncot létrehozni, amely később függetlenül ellenőrizhető és továbbfejleszthető.
+3. összehasonlítani a gép firmware-ét a megfelelő hivatalos Fujitsu firmware-rel;
+4. azonosítani a gépspecifikus régiókat;
+5. lehetőség szerint meghatározni ezek funkcióját;
+6. visszaállítani a POST-ot és a normál bootképességet;
+7. kivizsgálni az állandó hálózati identitás recovery utáni elvesztését;
+8. megállapítani, hogy ez az identitás Realtek EEPROM/eFuse-ból vagy Fujitsu platformfirmware-ből származik-e;
+9. visszaállítani az eredeti gépspecifikus konfigurációt a lehető legkisebb SPI-régió módosításával;
+10. megőrizni egy reprodukálható bizonyítási láncot.
 
-Ez a repository ezért nem általános BIOS-flashelési útmutató.
+Ez a repozitórium tehát **nem általános BIOS-flashelési útmutató**.
 
-Ez egy **bizonyíték-alapú firmware-helyreállítási és platformazonosság-rekonstrukciós esettanulmány**.
+Inkább:
+
+> **bizonyíték-alapú firmware-helyreállítási és platformidentitás-rekonstrukciós esettanulmány.**
 
 ---
 
-# 2. Bizonyítéki kategóriák
+# 2. Bizonyítéktípusok
 
-Annak érdekében, hogy a közvetlenül mért tények ne keveredjenek az értelmezéssel, a projektben szereplő állításokat elvben négy kategóriába soroljuk.
+Azért, hogy a mérések ne keveredjenek az értelmezéssel, a megállapítások több kategóriába sorolhatók.
 
 ### `[OFFICIAL]`
 
-Gyártói dokumentációból, hivatalos firmware-csomagból, hivatalos segédprogramból vagy más elsődleges technikai forrásból származó információ.
+Gyártói dokumentációból, hivatalos firmware-csomagból, gyártói segédprogramból vagy más elsődleges műszaki forrásból származó információ.
 
 ### `[OBSERVED]`
 
-A vizsgált hardveren közvetlenül mért, kiolvasott, naplózott, kinyert vagy reprodukált információ.
+A vizsgált hardveren közvetlenül mért, kiolvasott, naplózott, kinyert vagy reprodukált adat.
 
 ### `[INFERRED]`
 
-Több megfigyelés által erősen alátámasztott következtetés, amely azonban önmagában nem közvetlen mérési eredmény.
+Több megfigyeléssel erősen alátámasztott, de közvetlenül nem mért következtetés.
+
+### `[REPORTED HISTORY]`
+
+A gép állapotával vagy korábbi kezelésével kapcsolatos, a strukturált vizsgálat előtt keletkezett információ.
 
 ### `[OPEN QUESTION]`
 
-További bizonyítást vagy reprodukciót igénylő hipotézis, illetve jelenleg megoldatlan működés.
+További bizonyítékot vagy reprodukciót igénylő hipotézis vagy nem tisztázott viselkedés.
 
-Ez a különbségtétel lényeges.
+Firmware-kutatás során gyakran alakul ki hihető magyarázat még azelőtt, hogy azt ténylegesen bizonyítani lehetne.
 
-Firmware-kutatás során könnyen előfordulhat, hogy egy valószínű magyarázat sokkal hamarabb kialakul, mint hogy ténylegesen bizonyíthatóvá válna. A repository egyik célja éppen ezért az, hogy világosan elválassza egymástól:
+A repozitórium egyik célja ezért az elkülönítés:
 
-**mi történt**,  
-**mit mértünk**,  
-és **mit gondolunk jelenleg arról, hogy a mérések mit jelentenek**.
+- mi történt;
+- mit mértünk;
+- mit közöltek korábban;
+- és mit valószínűsít jelenleg a bizonyíték.
 
 ---
 
-# 3. A vizsgált platform
+# 3. Vizsgált platform
 
 A vizsgált rendszer:
 
@@ -119,18 +174,18 @@ alaplapja:
 
 **Fujitsu D3313-E1**
 
-A vizsgálat szempontjából releváns hardverelemek:
+A vizsgálat szempontjából releváns hardverek:
 
 - AMD GX-424CC négymagos beágyazott processzor;
 - Fujitsu D3313-E1 alaplap;
 - AMI Aptio-alapú firmware;
-- 8 MiB-os Macronix SPI flash;
-- fizikailag MX25L6473F családba azonosított Macronix flash;
-- Realtek RTL8111/8168G családba tartozó Gigabit Ethernet vezérlő;
+- 8 MiB Macronix SPI flash;
+- fizikailag azonosított MX25L6473F-családba tartozó flash;
+- Realtek RTL8111/8168G-családba tartozó Gigabit Ethernet vezérlő;
 - AMD FCH SATA vezérlő;
 - ASMedia ASM1061/ASM1062 SATA vezérlő;
-- 240 GB-os Kingston SATA SSD;
-- 16 GB-os mSATA SSD;
+- 240 GB Kingston SATA SSD;
+- 16 GB mSATA SSD;
 - Debian Linux.
 
 A vizsgálat során azonosított firmware-verzió:
@@ -139,55 +194,55 @@ A vizsgálat során azonosított firmware-verzió:
 V4.6.5.4 R1.16.0 for D3313-E1x
 ```
 
-A nyilvános repositoryban minden gépspecifikus azonosító — például sorozatszám, PC ID, UUID, teljes MAC-cím, HDCP-hoz kapcsolódó adat és más manufacturing mezők — szándékosan anonimizálva szerepel.
+A gépspecifikus értékeket – többek között sorozatszámot, PC ID-t, UUID-t, MAC-címet, HDCP-adatokat és más gyártási azonosítókat – a nyilvános repozitórium szándékosan nem tartalmazza.
 
 ---
 
-# 4. Kiinduló hibaállapot
+# 4. Kezdeti hibállapot
 
-A strukturált vizsgálat kezdetekor a rendszer már nem működött.
+A rendszer már működésképtelen volt, amikor a strukturált vizsgálat megkezdődött.
 
-A gép előéletéről kapott információ szerint közvetlenül a meghibásodás előtt processzor-újrapasztázási kísérlet történt.
+A rendelkezésre álló előzmény szerint közvetlenül a meghibásodás előtt processzor-újrapasztázás történt.
 
-A visszaszerelés során az alaplap hátoldalán található fém rögzítőlemez állítólag elmozdult a helyéről. Emiatt a hűtőegységet többször újra kellett pozicionálni, és eközben jelentős mechanikai nyomás érhette a processzor környezetét és az alaplapot.
+A visszaszerelés során az alaplap mögötti fém rögzítőlemez elmozdult a helyéről. A hűtőegységet ezt követően több alkalommal nyomták és igazították vissza.
 
-Ezt az információt:
+Ez az információ:
 
-**`[REPORTED HISTORY]`**
+```text
+[REPORTED HISTORY]
+```
 
-kategóriába soroljuk, vagyis nem saját kísérleti megfigyelésnek tekintjük.
+kategóriába tartozik.
 
-A mechanikai előzmény azért volt fontos, mert kizárta azt a lehetőséget, hogy már a vizsgálat elején egyszerűen BIOS-hibát feltételezzünk.
+Mivel mechanikai terhelés történt, nem lehetett biztonsággal feltételezni, hogy kizárólag firmware-hiba áll fenn.
 
-A lehetséges hibaforrások között szerepelt:
+Lehetséges kezdeti hibaforrások:
 
-- PCB-repedés;
-- sérült forrasztási kötés;
-- processzor környéki alkatrészhiba;
-- VRM- vagy tápági meghibásodás;
-- zárlat;
+- PCB-sérülés;
+- sérült forrasztási pont;
+- processzor körüli alkatrészsérülés;
+- VRM- vagy tápellátási hiba;
+- rövidzárlat;
 - mechanikai deformáció;
-- sérült SPI-firmware;
+- sérült SPI-tartalom;
 - érvénytelen firmware-állapot;
-- illetve több hiba egyidejű jelenléte.
+- vagy több hiba kombinációja.
 
-Az elérhető tápágakat és alaplapi mérési pontokat három külön alkalommal multiméterrel ellenőriztük.
+Az elérhető alaplapi feszültségpontok és tápvonalak ismételten mérésre kerültek.
 
-Nem találtunk olyan egyértelmű elektromos hibát, amely önmagában megmagyarázta volna a teljes bootképtelenséget.
+Nem sikerült olyan egyértelmű elektromos hibát azonosítani, amely önmagában megmagyarázta volna a teljes bootképtelenséget.
 
 Ez **nem bizonyította**, hogy az alaplap mechanikailag sértetlen.
 
-Azt azonban indokolta, hogy a firmware-vizsgálatot is folytassuk.
-
-A hardveres és firmware-es hipotéziseket ezért párhuzamosan tartottuk nyitva.
+Arra viszont elegendő volt, hogy a firmware-vizsgálatot folytassuk, miközben a hardveres hipotéziseket továbbra is nyitva hagytuk.
 
 ---
 
 # 5. Külső SPI-kiolvasás
 
-Az első firmware-kiolvasást egy alacsony költségű WCH CH341A USB SPI-programozóval és SOIC8 tesztcsipesszel végeztük.
+A kezdeti firmware-kiolvasás egy olcsó WCH CH341A USB SPI-programozóval és SOIC8 csipesszel történt.
 
-A programozó azonosítói:
+Programozóazonosítás:
 
 ```text
 VID: 1A86
@@ -195,26 +250,26 @@ PID: 5512
 Device: WCH CH341A
 ```
 
-Windows alatt több driverrel és programozóeszközzel történt kísérletezés.
+Windows alatt több driver és programozóeszköz is kipróbálásra került.
 
-A `flashrom` USB-n ebben a környezetben nem működött megbízhatóan, és többek között az alábbi hibát adta:
+A `flashrom` USB-hozzáférése ebben a környezetben megbízhatatlan volt, többek között ilyen hibával:
 
 ```text
 LIBUSB_ERROR_NOT_SUPPORTED
 ```
 
-Az IMSProg ezzel szemben sikeresen felismerte a programozót:
+Az IMSProg sikeresen felismerte:
 
 ```text
 WCH CH341A
 Device rev 3.0.4
 ```
 
-A legnagyobb gyakorlati problémát végül nem maga a programozó, hanem a SOIC8 csipesz mechanikai bizonytalansága jelentette.
+A legnagyobb gyakorlati probléma nem maga a programozó, hanem a SOIC8 csipesz mechanikai megbízhatatlansága volt.
 
-A csipesz elmozdulhatott vagy elveszíthette a kontaktust a flash tokozásán.
+A csipesz elmozdulhatott vagy elveszíthette az elektromos kontaktust.
 
-Ezért egyetlen látszólag sikeres kiolvasást nem tekintettünk elegendő bizonyítéknak.
+Ezért egyetlen látszólag sikeres kiolvasás nem számított elegendő bizonyítéknak.
 
 ---
 
@@ -222,138 +277,132 @@ Ezért egyetlen látszólag sikeres kiolvasást nem tekintettünk elegendő bizo
 
 Két egymástól független teljes SPI-kiolvasás készült.
 
-Mindkét image mérete pontosan:
+Mindkét image mérete:
 
 ```text
-8 388 608 byte
+8,388,608 byte
 ```
 
-volt, ami egy 8 MiB-os SPI flash teljes tartalmának felel meg.
+azaz 8 MiB volt.
 
-Mindkét kiolvasáshoz külön SHA256 ellenőrzőösszeget számítottunk.
-
-A két image ugyanazt az SHA256 digestet adta:
+Mindkét fájl SHA256 hash-e:
 
 ```text
 7E138DA4B68FB7C86DBD841631D6D60937AF2EA109297A51476610C8F01E3603
 ```
 
-Az egyező digest bizonyítja, hogy a két egymástól függetlenül kiolvasott 8 MiB-os image bitre pontosan azonos volt.
+A két azonos digest bizonyítja, hogy a két egymástól függetlenül elkészített firmware-kép bitre pontosan megegyezett.
 
-Az SHA256 értéket reprodukálhatósági és provenienciaazonosítóként tesszük közzé. Ennek segítségével később ellenőrizhető, hogy egy másik példány teljesen azonos-e a vizsgálat során használt eredeti image-dzsel anélkül, hogy magát a személyre szabott firmware-t közzé kellene tenni.
+A hash a proveniencia és reprodukálhatóság egyik nyilvános azonosítója.
 
-A nyers SPI-image szándékosan nem kerül publikálásra, mert gépspecifikus manufacturing és azonosítási adatokat tartalmaz.
+A személyre szabott SPI-image maga szándékosan nem kerül nyilvános terjesztésre, mert gépspecifikus gyártási és identitásadatokat tartalmaz.
 
-A kettős kiolvasás jelentősége módszertani.
-
-Egy bizonytalan SOIC8 kapcsolat hibás adatokat eredményezhet, de két egymástól függetlenül megszerzett, teljes 8 MiB-os és bitre pontosan azonos image lényegesen erősebb bizonyíték arra, hogy a flash tényleges tartalma helyesen került kiolvasásra.
-
-Ebből alakult ki a projekt egyik alapvető munkafolyamata:
+A módszertan:
 
 ```text
-OLVASD KI
-  ↓
-OLVASD KI ÚJRA
-  ↓
-HASONLÍTSD ÖSSZE
-  ↓
-HASH-ELD
-  ↓
-ELEMEZD
-  ↓
-CSAK EZUTÁN ÍRJ
+KIOLVASÁS
+   ↓
+ÚJRA KIOLVASÁS
+   ↓
+ÖSSZEHASONLÍTÁS
+   ↓
+HASH
+   ↓
+ELEMZÉS
+   ↓
+CSAK EZUTÁN ÍRÁS
 ```
 
-Ugyanezt az elvet később a helyreállított rendszerből végzett belső SPI-kiolvasásnál is alkalmaztuk.
+Ugyanez az elv később a helyreállítás utáni belső SPI-kiolvasásnál is alkalmazásra került.
 
 ---
 
 # 7. Összehasonlítás a hivatalos Fujitsu firmware-rel
 
-A megfelelő hivatalos Fujitsu R1.16 firmware-image-et külön beszereztük.
+A megfelelő hivatalos Fujitsu R1.16 firmware külön került beszerzésre.
 
-A vizsgálat egyik központi kérdése a következő volt:
+A központi kérdés:
 
-> **Miben különbözik egy konkrétan legyártott D3313-E1 firmware-tartalma a Fujitsu által terjesztett generikus firmware-től?**
+> **Miben különbözik egy legyártott D3313-E1 tényleges firmware-e a Fujitsu által terjesztett generikus firmware-től?**
 
-Ahelyett, hogy a teljes 8 MiB-os image-et egyetlen átláthatatlan bináris objektumként kezeltük volna, 64 KiB-os blokkokra bontottuk.
+A teljes 8 MiB-os image egyetlen bináris objektumként történő kezelése helyett mindkét firmware 64 KiB-os blokkokra lett bontva.
 
 Egy 8 MiB-os image:
 
 ```text
-128 × 64 KiB
+128 × 64 KiB blokk
 ```
 
-blokkból áll.
+méretű.
 
-Az eredmény meglepően egyértelmű lett.
+Az eredmény meglepően egyértelmű volt.
 
 ---
 
-# 8. Jelentős strukturális felismerés: 128 blokkból 127 azonos
+# 8. Fő strukturális eredmény: 127/128 blokk egyezett
 
 Az eredeti gép SPI-dumpja és a hivatalos Fujitsu R1.16 firmware:
 
 **128 blokkból 127-ben teljesen azonos volt.**
 
-Mindössze egyetlen 64 KiB-os régió tért el:
+Csak egyetlen 64 KiB-os régió tért el:
 
 ```text
 0x440000–0x44FFFF
 ```
 
-Ez a megfigyelés lényegesen megváltoztatta a vizsgálat irányát.
+Ez alapvetően megváltoztatta a vizsgálat irányát.
 
-A konkrét gép firmware-e nem széles körben tért el a gyári image-től.
+A konkrét gép firmware-e nem általánosan különbözött a gyári kiadástól.
 
-Éppen ellenkezőleg: a teljes 8 MiB-os firmware szinte egészében azonos volt a hivatalos Fujitsu kiadással.
+A teljes 8 MiB-os image szinte teljes egészében megegyezett a hivatalos firmware-rel.
 
-A gépspecifikus testreszabás egyetlen, nagyon kis régióba koncentrálódott.
+A gépspecifikus eltérés egyetlen kis régióban koncentrálódott.
 
-Ezután második ellenőrzést végeztünk.
+Egy további ellenőrzés is készült.
 
-A hivatalos Fujitsu R1.16 image:
+A hivatalos Fujitsu R1.16 image másolatában kizárólag:
 
 ```text
 0x440000–0x44FFFF
 ```
 
-blokkját kicseréltük az eredeti gép SPI-dumpjának ugyanazon blokkjára.
+került lecserélésre az eredeti gép megfelelő blokkjára.
 
-Az így kapott teljes 8 MiB-os image bitre pontosan azonos lett az eredeti gép SPI-dumpjával.
+Az így létrejött teljes 8 MiB-os image bitre pontosan megegyezett az eredeti gép SPI-image-ével.
 
-A kapcsolat tehát így írható fel:
+A kapcsolat tehát:
 
 ```text
 Hivatalos Fujitsu R1.16 firmware
-            +
-az eredeti gép 64 KiB-os OEM-blokkja
-            =
-a konkrét gép teljes eredeti SPI-image-e
+              +
+eredeti gépspecifikus 64 KiB OEM-blokk
+              =
+teljes eredeti gép SPI-image
 ```
 
-A vizsgált rendszer esetében ez a projekt egyik legerősebb strukturális eredménye.
+Ez a vizsgált rendszeren a projekt egyik legerősebb strukturális eredménye.
 
 ---
 
-# 9. UEFI Firmware Volume- és FFS-elemzés
+# 9. UEFI Firmware Volume és FFS-elemzés
 
-A firmware-t UEFI Firmware Volume és Firmware File System szinten is megvizsgáltuk.
+A firmware UEFI Firmware Volume és Firmware File System szinten is elemzésre került.
 
-Az elemzett image-ben:
+Az elemzett image:
 
 ```text
 8 érvényes Firmware Volume
 84 FFS fájl
-0 hibás FV fejléc
+0 hibás FV header
 0 hibás FFS checksum
 ```
 
-volt azonosítható.
+eredményt adott.
 
-Ez további bizonyítékot adott arra, hogy a kiolvasott image belsőleg koherens UEFI firmware.
+Ez további bizonyítékot jelentett arra, hogy a kiolvasott image belső szerkezete koherens.
 
-A gépspecifikus eltérések két kis firmware-struktúrában koncentrálódtak, amelyek hozzávetőlegesen innen kezdődnek:
+A gépspecifikus eltérések elsősorban az alábbi címek körül koncentrálódtak:
 
 ```text
 0x440000
@@ -365,43 +414,40 @@ A gépspecifikus eltérések két kis firmware-struktúrában koncentrálódtak,
 0x443000
 ```
 
-Mindkettő egy FREEFORM FFS objektumot tartalmazott.
-
-Az első megfigyelt FFS GUID:
+Megfigyelt FREEFORM FFS GUID-ok:
 
 ```text
 0972EB29-E62F-4699-A19C-664AC3B7208B
 ```
 
-A második:
+és:
 
 ```text
 8EEAF5CF-1C81-4FCC-AE1E-D8AD3CD15683
 ```
 
-A két struktúra rendkívül hasonló.
+A két struktúra erősen hasonló.
 
-Úgy tűnik, ugyanazon gépspecifikus manufacturing/OEM adat párhuzamos vagy redundáns reprezentációit tartalmazzák.
+Valószínűleg ugyanazon gépspecifikus gyártási információ redundáns vagy párhuzamos reprezentációját tartalmazzák.
 
-A redundancia pontos modellje jelenleg még nem teljesen ismert.
+A pontos redundanciamodell még nem ismert.
 
-Lehetséges magyarázatok:
+Lehetséges értelmezések:
 
 - elsődleges és tartalék példány;
-- aktív és készenléti rekord;
-- generációszámláló;
-- verziózott manufacturing rekord;
-- más integritási vagy fallback mechanizmus.
+- aktív és standby rekord;
+- generációalapú másolat;
+- verziózott gyártási struktúra;
+- integritási/fallback struktúra;
+- vagy más gyártóspecifikus mechanizmus.
 
-Ez további kutatási irány marad.
+Ez továbbra is nyitott kutatási irány.
 
 ---
 
 # 10. OEM/manufacturing adatstruktúrák
 
-A gépspecifikus régióban több felismerhető ASCII mezőnév található.
-
-A megfigyelt címkék között szerepelt:
+A gépspecifikus régióban felismerhető ASCII mezőnevek között szerepelt:
 
 ```text
 BdSn
@@ -422,47 +468,45 @@ IBSD
 AESD
 ```
 
-Egyes mezők jelentése viszonylag egyértelmű.
+Egyes mezők funkciója viszonylag egyértelmű.
 
-Mások csak részben vagy egyáltalán nem dokumentáltak.
+Mások részben vagy teljesen dokumentálatlanok.
 
-A lényeges megfigyelés az volt, hogy a hivatalos Fujitsu firmware több ilyen mezőben üres vagy template-értékeket tartalmaz, miközben az eredeti gép dumpjában tényleges gépspecifikus manufacturing adatok találhatók.
+A legfontosabb architekturális megfigyelés az, hogy a hivatalos Fujitsu firmware több mezőben sablon- vagy programozatlan értéket tartalmaz, míg a konkrét gép firmware-e kitöltött manufacturing adatokat hordoz.
 
-Ez egy általánosabb architekturális modellt támaszt alá:
+Ez a modellt támogatja:
 
 ```text
 generikus gyártói firmware
           +
-manufacturing személyre szabás
+gyártás közbeni személyre szabás
           =
 egy konkrét gép firmware-állapota
 ```
 
-Ezért a nyilvánosan letölthető gyártói firmware-image nem feltétlenül tekinthető egy adott gép teljes eredeti állapotának.
+Ezért egy nyilvános gyártói firmware-image nem tekinthető automatikusan egy konkrét legyártott gép teljes firmware-rekonstrukciójának.
 
 ---
 
-# 11. A gépspecifikus MAC-mező felismerése
+# 11. A gépspecifikus MAC-mező azonosítása
 
-Mindkét OEM-struktúrában megtalálható volt:
+Mindkét OEM-struktúra tartalmazta:
 
 ```text
 MAC Address #0
 ```
 
-amelyet hat byte követett.
+mezőt, amelyet hat byte követett.
 
-Az eredeti gép dumpjában mindkét redundáns példány ugyanazt a gépspecifikus Ethernet-címet tartalmazta.
+Az eredeti gép dumpjában mindkét másolat ugyanazt a gépspecifikus Ethernet-címet tartalmazta.
 
-A tényleges cím a nyilvános repositoryban:
+A tényleges értéket a nyilvános repozitórium így jelöli:
 
 ```text
 <REDACTED_FUJITSU_MAC>
 ```
 
-formában szerepel.
-
-A hivatalos Fujitsu R1.16 image azonos mezőiben viszont:
+A hivatalos R1.16 firmware megfelelő mezője:
 
 ```text
 FF FF FF FF FF FF
@@ -474,56 +518,52 @@ vagy:
 FF:FF:FF:FF:FF:FF
 ```
 
-szerepelt.
+volt.
 
-Ez jelentős eredmény.
+A hivatalos firmware tehát nem egy generikus Fujitsu MAC-ot tartalmazott.
 
-A hivatalos firmware nem egy generikus Fujitsu MAC-címet tartalmazott.
+Hanem egy **programozatlan manufacturing sablonértéket**.
 
-Hanem egy **még nem személyre szabott manufacturing template értéket**.
-
-A konkrét gép Ethernet-azonossága tehát később, a gyártási vagy személyre szabási folyamat során kerülhetett ebbe a struktúrába.
+Az egyedi Ethernet-azonosság a gyártás vagy személyre szabás során került a gépbe.
 
 ---
 
-# 12. A nyers SPI-image adatvédelmi és forenzikai jelentősége
+# 12. SPI-dumpok adatvédelmi és forenzikus jelentősége
 
-Ennek a felismerésnek a javításon túlmutató következményei is vannak.
-
-Egy nyers SPI-dumpot nem szabad egyszerűen „BIOS-fájlként” kezelni.
+Egy nyers SPI-image-et nem szabad automatikusan egyszerű „BIOS-fájlként” kezelni.
 
 Tartalmazhat:
 
-- sorozatszámot;
-- PC ID-t;
-- UUID-t;
-- MAC-címet;
-- HDCP-hoz kapcsolódó adatokat;
+- sorozatszámokat;
+- PC ID-ket;
+- UUID-ket;
+- MAC-címeket;
+- HDCP-hez kapcsolódó adatokat;
 - platformazonosítókat;
 - konfigurációs adatokat;
-- manufacturing metaadatokat;
-- és esetleg további, jelenleg még nem teljesen visszafejtett érzékeny mezőket.
+- gyártási metaadatokat;
+- más gépspecifikus értékeket.
 
-Ezért ez a repository **nem teszi közzé**:
+Ezért a nyilvános repozitórium **nem tartalmazza**:
 
 - az eredeti személyre szabott SPI-dumpot;
-- a személyre szabott recovery ROM-ot;
+- személyre szabott recovery ROM-ot;
 - valódi sorozatszámokat;
-- valódi PC ID-t;
+- valódi PC ID-ket;
 - teljes UUID-ket;
-- a teljes gépspecifikus MAC-címet;
-- HDCP-hoz kapcsolódó adatokat;
-- más egyedi manufacturing értékeket.
+- teljes gépspecifikus MAC-címet;
+- HDCP-hez kapcsolódó adatokat;
+- más gépspecifikus manufacturing titkokat.
 
-Csak anonimizált példák, offsetek, struktúraleírások és adatvédelmileg ellenőrzött képek kerülhetnek nyilvánosságra.
+Csak anonimizált példák, strukturális leírások, hash-ek, offsetek és megfelelően kitakart anyagok kerülhetnek nyilvánosságra.
 
 ---
 
-# 13. Fujitsu BootStick elemzése
+# 13. Fujitsu BootStick vizsgálat
 
-A recovery során használt Fujitsu BootStick mechanizmust külön is megvizsgáltuk.
+A Fujitsu BootStick mechanizmus külön vizsgálatra került.
 
-A segédprogram hagyományos FreeDOS-alapú rendszerindító adathordozót készített, amely tartalmazott:
+A segédprogram egy hagyományos FreeDOS-alapú boot adathordozót hozott létre, amely tartalmazta:
 
 - MBR-t;
 - egy aktív FAT32 partíciót;
@@ -531,18 +571,18 @@ A segédprogram hagyományos FreeDOS-alapú rendszerindító adathordozót kész
 - `KERNEL.SYS` fájlt;
 - `COMMAND.COM` fájlt.
 
-Az újonnan létrehozott BootStick alapértelmezett `AUTOEXEC.BAT` fájlja nem tartalmazott automatikus BIOS-flash parancsot.
+Egy frissen generált BootStick alapértelmezett `AUTOEXEC.BAT` fájlja nem tartalmazott automatikus BIOS-flashelési parancsot.
 
-Ez azért volt lényeges, mert két egymással könnyen összekeverhető elemet különített el:
+Ez segített elkülöníteni:
 
-1. a Fujitsu BootStick által létrehozott generikus rendszerindító környezetet;
-2. az adott alaplaphoz és BIOS-csomaghoz tartozó tényleges recovery mechanizmust.
+1. a Fujitsu BootStick által létrehozott általános bootkörnyezetet;
+2. a tényleges, alaplapspecifikus firmware-helyreállítási logikát.
 
-A sikeres recovery végül egy 2 GB-os USB-adathordozóról történt.
+A sikeres helyreállítás során végül egy 2 GB-os USB flash meghajtó került használatra.
 
-A hibalehetőségek csökkentése érdekében egyszerű hátlapi USB 2.0 portot választottunk.
+Egy hátlapi USB 2.0 port lett kiválasztva a változók csökkentése érdekében.
 
-Nem állítjuk, hogy ez a port elektromosan rövidebb, kizárólagosan szükséges vagy hivatalosan kijelölt recovery port.
+Nem állítható, hogy ez a port elektromosan „rövidebb”, kizárólagos recovery-port, vagy hivatalosan ilyen célra kijelölt.
 
 Ez gyakorlati kompatibilitási döntés volt.
 
@@ -550,7 +590,7 @@ Ez gyakorlati kompatibilitási döntés volt.
 
 # 14. Recovery jumper konfiguráció
 
-A vizsgált D3313-E1 alaplapon a jumper elrendezése:
+A vizsgált D3313-E1-en megfigyelt jumperelrendezés:
 
 ```text
 5     3     1
@@ -560,10 +600,10 @@ A vizsgált D3313-E1 alaplapon a jumper elrendezése:
 6    [ ]    2
       ↑
  hiányzó pin
- 4-es pozíció
+   4. pozíció
 ```
 
-A megfigyelt működési állások:
+Megfigyelt pozíciók:
 
 ```text
 DEFAULT   J5–3
@@ -571,79 +611,75 @@ RESERVED  J1–2
 RECOVERY  J5–6
 ```
 
-A hibakeresés korábbi szakaszában az alaplap tévedésből több alkalommal is elindult RESERVED állásban.
+Egy korábbi hibakeresési szakaszban az alaplap véletlenül többször is a RESERVED állásban kapott tápot.
 
-A vizsgált példányon nem figyeltünk meg ehhez egyértelműen köthető visszafordíthatatlan károsodást.
+Ezen az egy példányon nem volt megfigyelhető ehhez egyértelműen köthető visszafordíthatatlan károsodás.
 
-Ez azonban **nem jelenti azt, hogy a RESERVED állás biztonságos**.
+Ez **nem jelenti azt**, hogy a RESERVED pozíció biztonságos.
 
-A pontos funkcióját nem fejtettük vissza, ezért használata nem javasolt.
+A funkciója nincs teljesen reverse engineeringgel feltárva, ezért használata nem ajánlott.
 
 ---
 
-# 15. A sikeres recovery konfigurációja
+# 15. Sikeres recovery-konfiguráció
 
-A sikeres firmware-recoveryhez a hardverkonfigurációt tudatosan minimalizáltuk.
+A firmware-helyreállítás szándékosan minimális hardverkonfigurációval történt.
 
-Csatlakoztatva maradt:
+Csatlakoztatott elemek:
 
 - alaplap;
 - processzor;
-- egy RAM-modul a DIMM1 foglalatban;
-- CMOS elem;
+- egy RAM-modul DIMM1-ben;
+- CMOS-elem;
 - buzzer;
 - kijelző;
 - billentyűzet;
 - recovery USB.
 
-A nem szükséges háttértárakat és perifériákat eltávolítottuk.
+A nem szükséges adattárolók és perifériák eltávolításra kerültek.
 
-A jumpert RECOVERY állásba tettük.
+A jumper RECOVERY állásba került.
 
-A folyamat során rövid, periodikus sípolások jelentkeztek.
+Recovery közben periodikus rövid sípolások voltak megfigyelhetők.
 
-A látszólag sikeres befejezéskor ismétlődő:
+A folyamat látszólagos befejezésekor az ismétlődő minta:
 
 ```text
 hosszú – hosszú – rövid – rövid
 ```
 
-hangmintát figyeltünk meg.
+volt.
 
-Ezután a gépet:
+Ezután a gép:
 
-1. kikapcsoltuk;
-2. leválasztottuk a tápellátásról;
-3. eltávolítottuk a recovery USB-t;
-4. a jumpert visszatettük DEFAULT állásba.
+1. kikapcsolásra került;
+2. áramtalanítás történt;
+3. a recovery adathordozó eltávolításra került;
+4. a jumper visszakerült DEFAULT állásba.
 
-A következő normál indításkor visszatért a videokimenet, és a BIOS Setup ismét elérhetővé vált.
+A következő normál bootkor visszatért a videokimenet, és elérhetővé vált a BIOS Setup.
 
-A korábban működésképtelen alaplap újra POST-olt.
+A korábban nem működő alaplap ismét POST-olt.
 
-A BIOS-recovery tehát sikeres volt.
+A BIOS-helyreállítás sikerült.
 
 ---
 
-# 16. Váratlan hálózati azonossághiba a recovery után
+# 16. Recovery utáni hálózati identitáshiba
 
-A POST helyreállítása után új rendellenesség jelent meg.
+A POST helyreállítása után egy új rendellenesség vált láthatóvá.
 
-A BIOS a Realtek hálózati vezérlő MAC-címeként:
+A BIOS a Realtek interfész MAC-címét így mutatta:
 
 ```text
 00:00:00:00:00:00
 ```
 
-értéket mutatott.
+A Debian ennek ellenére elindult, a hálózat pedig működött.
 
-A Debian ennek ellenére elindult, és a hálózat működött.
+Az interfész fizikai linket hozott létre, hálózati konfigurációt kapott, és SSH-n elérhető volt.
 
-Az interfész fizikai linket épített fel, hálózati konfigurációt kapott, és SSH-n keresztül elérhető volt.
-
-Első látásra ez akár egyszerű BIOS-kijelzési hibának is tűnhetett volna.
-
-A Linux naplói azonban mást mutattak.
+A Linux naplók azonban megmutatták, hogy nem pusztán megjelenítési hibáról van szó.
 
 Az `r8169` driver ezt jelezte:
 
@@ -657,61 +693,53 @@ Az `ethtool` pedig:
 Permanent address: not set
 ```
 
-állapotot mutatott.
+eredményt adott.
 
-Az operációs rendszer tehát nem kapott érvényes állandó hardveres MAC-címet.
+Az operációs rendszer tehát nem kapott érvényes állandó hardver-MAC-ot.
 
-A hálózat azért maradt működőképes, mert a Linux generált egy helyettesítő címet, amelyet később a systemd MAC-policy stabilizált.
+A hálózat azért működött, mert Linux ideiglenes címet generált.
 
-A gép tehát visszakapta a hálózati kapcsolatot, de elvesztette eredeti hardveres hálózati azonosságát.
+A gép visszanyerte a hálózati működést, de elvesztette eredeti hardveres hálózati azonosságát.
 
 ---
 
 # 17. Az operációs rendszer és a hardverállapot szétválasztása
 
-A következő szükséges kérdés az volt:
+A következő kérdés:
 
-> **Lehetséges, hogy ez csak Linux-driverprobléma?**
+> **Ez csak Linux-driver probléma?**
 
-A hipotézis ellenőrzéséhez a vizsgálatot kivittük a normál Linux hálózati stackből.
+Ennek tesztelésére a vizsgálat kikerült a Debian normál hálózati stackjéből.
 
-DOS-alapú Realtek-diagnosztikát választottunk, hogy a vezérlőt a Debian és az `r8169` drivertől függetlenül lehessen megvizsgálni.
+DOS-alapú Realtek diagnosztikai eszköz került használatra a vezérlő független ellenőrzéséhez.
 
 ---
 
 # 18. Realtek RSET8168 diagnosztika
 
-A Realtek DOS diagnosztikai segédprogramját:
+A Realtek DOS-programja:
 
 ```text
 RSET8168 v1.24
 ```
 
-külön FreeDOS USB-ről indítottuk.
+FreeDOS alól indult.
 
-A program közvetlenül a hálózati vezérlőt vizsgálta.
-
-A státuszképernyő:
+A státuszképernyő ezt mutatta:
 
 ```text
 Ethernet Address: 00 00 00 00 00 00
 ```
 
-értéket mutatott.
+A MAC-regiszter nézet szintén nullákat tartalmazott.
 
-A MAC-regiszter nézet szintén nullás adatokat jelzett.
-
-Ez fontos bizonyítéki lépés volt.
-
-A hiányzó MAC nem a Debian hálózati stackje miatt alakult ki.
-
-A Realtek vezérlő Linux nélkül sem rendelkezett érvényes gépazonossággal.
+A hiányzó identitás tehát már Linuxon kívül is hiányzott.
 
 ---
 
-# 19. EEPROM-diagnosztika eredménye
+# 19. EEPROM-diagnosztikai eredmény
 
-Az RSET8168 EEPROM Diagnostic Test ezt jelezte:
+Az RSET8168 ezt jelezte:
 
 ```text
 No Valid External EEPROM!!
@@ -723,35 +751,35 @@ majd:
 Data from EFuse
 ```
 
-végül:
+és:
 
 ```text
 EFuse Fail
 ```
 
-Ez új hipotézist vetett fel.
+Egy új hipotézis vált hihetővé.
 
-Ha nincs érvényes külső EEPROM, akkor elképzelhető volt, hogy a MAC az RTL8168G belső eFuse területén található.
+Ha nincs érvényes külső EEPROM, lehetséges, hogy a rendszer normál esetben az RTL8168G belső eFuse-ában tárolja az Ethernet-azonosságot.
 
-Ha pedig az eFuse a recovery során sérült vagy elvesztette a tartalmát, akkor közvetlen Realtek-programozás is lehetséges javítási iránynak tűnt.
+Ebben az esetben a közvetlen Realtek-programozás lehetett volna javítási út.
 
-Ebben a szakaszban ez még ésszerű, de nem bizonyított magyarázat volt.
+Ekkor azonban ez még nem volt bizonyított.
 
 ---
 
 # 20. Közvetlen Realtek eFuse-vizsgálat
 
-Az eFuse-hipotézis közvetlen teszteléséhez Linux alatt Realtek PGTool-kompatibilis segédprogramot használtunk.
+A vezérlő közvetlen vizsgálatához Linux alatt Realtek PGTool-kompatibilis eszköz került használatra.
 
-A toolkészlet tartalmazta:
+A toolset többek között tartalmazta:
 
 ```text
 8168GEF.cfg
 ```
 
-konfigurációt az RTL8168G család eFuse-kezeléséhez.
+konfigurációt az RTL8168G-családhoz.
 
-A hozzá tartozó saját kernelmodul azonban elavult Linux API-t használt, és kezdetben nem fordult le a Debian 6.12 kernellel.
+A saját kernelmodul elavult Linux API-t használt.
 
 Az eredeti:
 
@@ -759,103 +787,95 @@ Az eredeti:
 vma->vm_flags |= VM_IO;
 ```
 
-sort:
+kód Debian 6.12 kernelhez így került módosításra:
 
 ```c
 vm_flags_set(vma, VM_IO);
 ```
 
-hívásra módosítottuk.
+Ezt követően a modul lefordult és betöltődött.
 
-A kompatibilitási módosítás után a modul sikeresen lefordult és betöltődött.
-
-A normál `r8169` drivert leállítottuk, és a Realtek vezérlőt a PGTool saját driverével olvastuk.
+A normál `r8169` driver eltávolításra került, és a vezérlő a PGTool driveren keresztül vált közvetlenül elérhetővé.
 
 ---
 
-# 21. Döntő eFuse-eredmény
+# 21. Kritikus eFuse-eredmény
 
-A csak olvasási módban végzett eFuse-kiolvasás során az olvasható területen kizárólag:
+A kiolvasható eFuse-terület kizárólag:
 
 ```text
 FF
 ```
 
-értékek jelentek meg.
+értékeket tartalmazott.
 
-Ennél is fontosabb, hogy a program ezt közölte:
+Ennél is fontosabb:
 
 ```text
 Efuse Write Count = 0
 ```
 
-miközben lényegében a teljes eFuse kapacitás még szabad volt.
+volt az eredmény, miközben a programozható eFuse-kapacitás lényegében teljes egészében szabad maradt.
 
-Ez lényeges különbség.
+Ez fontos különbség.
 
-Egy kizárólag `FF` értékeket tartalmazó eFuse elméletileg lehetne törölt vagy hiányos adat is.
+A kizárólag `FF` értékek önmagukban jelenthetnének törölt vagy hiányzó adatot.
 
-A nulla írásszámláló azonban erősen arra utal, hogy ezt a területet **korábban soha nem programozták**.
+A nulla írásszám azonban erősen arra utal, hogy a régiót **soha nem programozták**.
 
-Az EEPROM olvasási útvonala emellett:
+Az EEPROM-útvonal ezt is jelezte:
 
 ```text
 Not Support This Adapter
 ```
 
-eredményt adott.
+Ezek együtt erősen ellene szóltak annak a feltételezésnek, hogy az eredeti Fujitsu MAC korábban tartósan Realtek EEPROM-ban vagy eFuse-ban lett volna eltárolva.
 
-A megfigyelések együtt ezért ellene szóltak annak a modellnek, hogy az eredeti Fujitsu MAC tartósan a Realtek EEPROM/eFuse tárolójában lett volna.
+Egy új modell vált lényegesen valószínűbbé:
 
-Egy másik modell vált sokkal valószínűbbé:
+> **A Fujitsu firmware a hálózati vezérlőt az alaplapi SPI-ben tárolt gépspecifikus platformadatból inicializálja.**
 
-> **A Fujitsu firmware a Realtek vezérlőt az alaplapi SPI flashben tárolt gépspecifikus platformadatokból inicializálhatja.**
-
-Ekkor ez még következtetés volt.
-
-A bizonyításhoz a recovery utáni fizikai SPI-tartalmat is közvetlenül össze kellett hasonlítani.
+Ehhez azonban még össze kellett hasonlítani a tényleges, recovery utáni fizikai SPI-tartalmat.
 
 ---
 
-# 22. Miért nem programoztuk egyszerűen be a Realtek eFuse-t?
+# 22. Miért nem programoztuk a Realtek eFuse-t
 
-A PGTool technikailag lehetővé tette volna node ID/MAC programozását a Realtek nem felejtő tárolójába.
+A PGTool környezet képes lett volna node ID/MAC programozására nem felejtő vezérlőtárolóba.
 
-Az eredeti MAC-cím ismert volt.
+Az eredeti gép MAC-címe ismert volt.
 
 Az eFuse üresnek látszott.
 
-Ez tehát gyors kerülőmegoldás lehetett volna.
+A programozás gyors workaround lehetett volna.
 
-Tudatosan nem ezt választottuk.
-
-Az okok módszertani és technikai jellegűek voltak.
+Ezt az opciót szándékosan elvetettük.
 
 Az eFuse-programozás:
 
 - tartós;
-- nem azonos egy normál, újraírható flash művelettel;
+- eltér a normál újraírható flash használatától;
 - véges programozható kapacitással rendelkezik;
 - potenciálisan visszafordíthatatlan;
-- és semmi nem bizonyította, hogy a Fujitsu eredeti platformterve ezt a tárolási módot használta.
+- és nem volt bizonyított, hogy az eredeti Fujitsu megoldás ezt használta.
 
-A projekt célja nem egyszerűen az volt, hogy:
+A cél nem egyszerűen az volt:
 
-> „legyen újra valamilyen állandó MAC-cím”.
+> „legyen újra permanens MAC.”
 
-A cél az volt, hogy:
+Hanem:
 
-> **az eredeti gép által használt mechanizmust állítsuk helyre.**
+> **állítsuk vissza azt a mechanizmust, amelyet az eredeti gép használt.**
 
-A Realtek eFuse programozása ezért csak tartalék lehetőség maradt.
+Ezért a Realtek eFuse programozása csak tartalék lehetőség maradt.
 
 ---
 
-# 23. Belső SPI-hozzáférés Linuxból
+# 23. Belső SPI-hozzáférés Linux alatt
 
-Ekkorra a külső SOIC8 csipesz kábele használhatatlanná vált.
+Ekkorra a külső SOIC8 csipeszes kábel használhatatlanná vált.
 
-A külső programozó javítása helyett először megvizsgáltuk, hogy a már bootoló Debian rendszerből hozzáférhető-e közvetlenül a SPI flash.
+Mivel a számítógép már bootolt, belső SPI-hozzáférés került tesztelésre Debian alatt.
 
 A:
 
@@ -863,7 +883,7 @@ A:
 flashrom -p internal
 ```
 
-parancs sikeresen felismerte az:
+parancs azonosította:
 
 ```text
 AMD FCH
@@ -871,136 +891,136 @@ AMD FCH
 
 chipsetet.
 
-A `flashrom` több kompatibilis 8 MiB-os Macronix flashdefiníciót ajánlott fel.
+Több kompatibilis Macronix definíció jelent meg.
 
-A fizikai chip azonosítása alapján kifejezetten az:
+A fizikailag azonosított flashcsomag alapján explicit:
 
 ```text
 MX25L6473F
 ```
 
-definíciót választottuk.
+került kiválasztásra.
 
-Két teljes, egymástól független 8 MiB-os belső kiolvasást végeztünk.
+Két teljes belső 8 MiB-os kiolvasás készült.
 
-A két image SHA256 értéke azonos lett.
+SHA256 hash-ük megegyezett.
 
-Ez ugyanazt a bizonyítási elvet reprodukálta, amelyet a külső kiolvasásnál már alkalmaztunk:
+A bizonyítási elv tehát ismét teljesült:
 
 ```text
 két független kiolvasás
         +
 azonos kriptográfiai hash
         =
-megbízható recovery utáni SPI-referencia
+megbízható recovery utáni SPI-baseline
 ```
 
-Így megbízható képet kaptunk arról, hogy **mi található fizikailag a flash chipben a Fujitsu recovery után**.
+A tényleges fizikai recovery utáni flashállapotról így megbízható image állt rendelkezésre.
 
 ---
 
-# 24. Döntő felismerés: az OEM MAC állapota recovery után
+# 24. Döntő recovery utáni OEM-megfigyelés
 
-A recovery utáni SPI-dumpban ismét megkerestük a két:
+A két:
 
 ```text
 MAC Address #0
 ```
 
-struktúrát.
+struktúra ismét megtalálható volt a recovery utáni SPI-dumpban.
 
-Mindkettő továbbra is jelen volt.
+Strukturálisan mindkettő megmaradt.
 
-A hozzájuk tartozó hat byte azonban most:
+A hozzájuk tartozó hat byte azonban:
 
 ```text
 FF FF FF FF FF FF
 ```
 
-értéket tartalmazott.
+értékre változott.
 
-Ez pontosan ugyanaz volt, mint a hivatalos Fujitsu R1.16 gyári image-ben.
+Ez pontosan megfelelt a hivatalos Fujitsu R1.16 sablonértékének.
 
-A három állapot így közvetlenül összehasonlíthatóvá vált.
+A három releváns állapot így hasonlítható össze.
 
-### Az eredeti gép SPI-je
+### Eredeti gép SPI
 
 ```text
 MAC Address #0 → <REDACTED_FUJITSU_MAC>
 ```
 
-### Hivatalos Fujitsu R1.16 image
+### Hivatalos Fujitsu R1.16
 
 ```text
 MAC Address #0 → FF:FF:FF:FF:FF:FF
 ```
 
-### Fizikai SPI a recovery után
+### Fujitsu recovery utáni fizikai SPI
 
 ```text
 MAC Address #0 → FF:FF:FF:FF:FF:FF
 ```
 
-Ez a megfigyelés több korábban különálló jelenséget összekapcsolt.
+Ez összekötötte a korábban külön kezelt tüneteket:
 
-Megmagyarázta:
+- nullás BIOS MAC;
+- nulla Ethernet-cím RSET8168 alatt;
+- Linux `Permanent address: not set`;
+- Linux által generált ideiglenes MAC;
+- látszólag soha nem programozott Realtek eFuse.
 
-- a BIOS nullás MAC-kijelzését;
-- az RSET8168 nullás Ethernet Address értékét;
-- a Linux `Permanent address: not set` állapotát;
-- a kernel által generált helyettesítő MAC-et;
-- és a látszólag üres Realtek eFuse-t.
+A vezérlő nem feltétlenül egy saját belső MAC-ot veszített el.
 
-A vezérlő tehát nem feltétlenül egy saját, belső MAC-címet „veszített el”.
-
-A Fujitsu platformfirmware-ből hiányzott az a gépspecifikus érték, amelyből a vezérlőt inicializálni kellett.
+A Fujitsu platformfirmware nem tartalmazta többé a vezérlő inicializálásához szükséges gépspecifikus értéket.
 
 ---
 
-# 25. Mit mond ez a Fujitsu recovery működéséről?
+# 25. Mit jelent ez a Fujitsu recovery működésére nézve
 
-Itt különösen fontos az óvatos értelmezés.
+Az eredményt óvatosan kell értelmezni.
 
-A bizonyítékok **nem** elegendőek ahhoz az egyszerűsítő állításhoz, hogy:
+A bizonyíték **nem** igazolja azt az egyszerűsített állítást, hogy:
 
-> „a Fujitsu recovery egyszerűen felülírja az OEM-régiót a gyári image-dzsel”.
+> „A Fujitsu recovery egyszerűen felülírja az OEM-régiót a gyári image-dzsel.”
 
-A közvetlenül bizonyított tény ennél szűkebb és egyben érdekesebb.
+A valós megállapítás szűkebb.
 
-A recoveryhez használt forrásimage tartalmazta az eredeti személyre szabott adatot.
+A recovery forrásfirmware tartalmazott személyre szabott adatot.
 
-A recovery után azonban a fizikai SPI releváns OEM-struktúráiban gyári template MAC-érték szerepelt.
+A recovery után a fizikai SPI releváns OEM-struktúrái mégis gyári sablonértéket tartalmaztak.
 
-Ez azt jelenti, hogy a recovery **nem egyszerű, teljes chipre kiterjedő bitről bitre másolást végez a megadott 8 MiB-os image-ből**.
+Ezért a recovery folyamat **nem egyszerű, bitre pontos teljes-chip másolás** a megadott 8 MiB-os forrásból.
 
 Valamilyen további recovery-logika működik.
 
 Lehetséges modellek:
 
-- szelektív Firmware Volume-írás;
+- szelektív Firmware Volume írás;
 - manufacturing régió újragenerálása;
-- bizonyos személyre szabott struktúrák figyelmen kívül hagyása;
-- külön OEM-kezelési szabályok;
-- valamely belső recovery-komponensből történő rekonstrukció;
-- vagy más alaplapspecifikus recovery-policy.
+- egyes személyre szabott struktúrák kihagyása;
+- OEM-régiók speciális kezelése;
+- belső komponensből történő rekonstrukció;
+- más, alaplapspecifikus szabály.
 
-A pontos algoritmus:
+A pontos működés:
 
-**`[OPEN QUESTION]`**
+```text
+[OPEN QUESTION]
+```
 
-és a projekt egyik legerősebb további kutatási iránya.
+marad.
 
 ---
 
-# 26. Miért nem írtuk vissza a teljes régi 8 MiB-os image-et?
+# 26. Miért nem írtuk vissza a teljes régi SPI-image-et
 
-Rendelkezésre állt az eredeti teljes 8 MiB-os firmware-dump.
+Rendelkezésre állt a teljes eredeti 8 MiB-os dump.
 
-A legegyszerűbb javítás ezért az lehetett volna, hogy ezt teljes egészében visszaírjuk.
+A legegyszerűbbnek tűnő javítás tehát az egész történeti image visszaírása lett volna.
 
-Ezt tudatosan elutasítottuk.
+Ezt szándékosan elvetettük.
 
-Az eredeti és a recovery utáni SPI-image több 64 KiB-os blokkban is eltért, többek között:
+Az eredeti és a recovery utáni image összehasonlítása több 64 KiB-os blokkban is eltérést mutatott, többek között:
 
 ```text
 2
@@ -1012,50 +1032,44 @@ Az eredeti és a recovery utáni SPI-image több 64 KiB-os blokkban is eltért, 
 68
 ```
 
-blokkokban.
+A nagyobb eltérések részben olyan területeken voltak, amelyek futás közben változó firmware-állapothoz köthetők.
 
-Jelentős különbségek voltak olyan területeken is, amelyek futás közben változó firmware/NVRAM állapothoz kapcsolódhatnak.
-
-Ez önmagában nem rendellenes.
-
-Egy működő UEFI rendszer jogosan módosíthat:
+Egy működő UEFI-környezet jogosan módosíthat:
 
 - bootváltozókat;
 - NVRAM-rekordokat;
 - számlálókat;
-- futásidejű konfigurációt;
+- runtime konfigurációt;
 - eszközállapotot;
-- recovery-állapotot.
+- recovery állapotot.
 
-A teljes korábbi image vak visszaírása ezért az OEM-azonossággal együtt olyan, a hibához nem kapcsolódó futásidejű állapotokat is visszaállított volna, amelyekhez nem akartunk hozzányúlni.
+A teljes történeti image visszaírása ezért feleslegesen visszaállított volna más, közben legitim módon megváltozott firmware-állapotokat is.
 
-A vezérelv ezért:
+A vezérelv:
 
-> **Tartsuk meg a jelenleg működő firmware-állapotot, és csak azt állítsuk vissza, amelyről bizonyítottuk, hogy hiányzik.**
+> **A jelenleg működő firmware-t őrizzük meg, és csak azt az adatot állítsuk vissza, amelyről bizonyított, hogy hiányzik.**
 
 ---
 
-# 27. A javítási jelölt elkészítése
+# 27. A javítási candidate elkészítése
 
-A megbízható recovery utáni SPI-image szolgált alapként.
+A megbízható recovery utáni SPI-image lett az alap.
 
-Kizárólag:
+Csak az alábbi régió:
 
 ```text
 0x440000–0x44FFFF
 ```
 
-régióját cseréltük ki az eredeti, recovery előtti dump megfelelő 64 KiB-os blokkjára.
+került lecserélésre az eredeti gép recovery előtti dumpjának megfelelő 64 KiB-os blokkjára.
 
-Az így létrejött fájl:
+A létrejött candidate neve:
 
 ```text
 D3313_REPAIRED_CANDIDATE.bin
 ```
 
-nevet kapta.
-
-A javítási jelölt és a recovery utáni aktuális firmware byte-szintű összehasonlítása:
+A jelenlegi recovery-image és a candidate byte-szintű összehasonlítása:
 
 ```text
 3526 eltérő byte
@@ -1066,63 +1080,61 @@ eredményt adott.
 Minden eltérés:
 
 ```text
-egyetlen 64 KiB-os blokkban
+egyetlen 64 KiB-os blokk
 ```
 
-található, mégpedig az előzőleg azonosított OEM/manufacturing régióban.
+területére esett, vagyis az azonosított OEM/manufacturing régióra.
 
-Ez volt a kívánt állapot.
+A működő recovery firmware érintetlen maradt.
 
-A működő recovery utáni firmware minden más része — köztük a futás közben változott állapotok — érintetlen maradt.
-
-Csak a gépspecifikus OEM-régió tért el.
+Csak a személyre szabott OEM-régió tért el.
 
 ---
 
-# 28. Fizikai ellenőrzés írás előtt
+# 28. Írás előtti fizikai ellenőrzés
 
-A `flashrom` számára külön layoutot definiáltunk:
+A `flashrom` számára az OEM-régió:
 
 ```text
 0x440000:0x44ffff OEM
 ```
 
-Mielőtt tényleges írás történt volna, a javítási jelöltet összevetettük a fizikai flash jelenlegi tartalmával.
+layoutként került megadásra.
 
-A verify eredménye:
+Írás előtt a candidate a tényleges fizikai flash-tartalommal is összevetésre került.
+
+Az ellenőrzés:
 
 ```text
-3526 eltérő byte
+3526 differing bytes
 ```
 
-volt.
+eredményt adott.
 
-Ez pontosan megegyezett a korábbi, független fájlszintű összehasonlítás eredményével.
+Ez pontosan megegyezett a független fájlszintű összehasonlítás eredményével.
 
 Két külön módszer tehát ugyanazt mutatta:
 
 ```text
 fájlszintű bináris összehasonlítás → 3526 byte
-fizikai flash verify               → 3526 byte
+fizikai flash verification         → 3526 byte
 ```
 
-Ez az egyezés jelentősen csökkentette annak kockázatát, hogy rossz régiót vagy rossz javítási image-et írjunk.
-
-A tényleges írás csak ezután történt meg.
+Csak ezután történt meg a fizikai írás.
 
 ---
 
-# 29. Szelektív 64 KiB-os SPI-visszaállítás
+# 29. Szelektív 64 KiB-os visszaállítás
 
-A teljes 8 MiB-os flash-t **nem** írtuk újra.
+A teljes 8 MiB-os SPI flash **nem** került újraírásra.
 
-Kizárólag:
+Csak:
 
 ```text
 0x440000–0x44FFFF
 ```
 
-régió került kijelölésre.
+került kiválasztásra.
 
 A `flashrom` ezt jelezte:
 
@@ -1136,39 +1148,39 @@ majd:
 Verifying flash... VERIFIED.
 ```
 
-Az írás után külön második verify műveletet is végrehajtottunk.
+Ezután külön verification művelet is történt.
 
-Ennek eredménye ismét:
+Az ismét:
 
 ```text
 VERIFIED
 ```
 
-volt.
+eredményt adott.
 
-Ez a második, független ellenőrzés tudatos döntés volt.
+Ez a második ellenőrzés szándékos volt.
 
-Nem tekintettük elegendőnek az írás utáni automatikus sikerüzenetet.
+A közvetlenül írás után megjelenő success message önmagában nem számított elegendő bizonyítéknak.
 
-A fizikai flash tartalmát külön újra ellenőriztük a kívánt javítási állapottal szemben.
+A fizikai eszköz külön is ellenőrzésre került az elvárt javított állapothoz képest.
 
 ---
 
-# 30. A helyreállítás eredménye
+# 30. Helyreállítási eredmény
 
-A gépet teljesen leállítottuk, majd hidegindítást végeztünk.
+A gép teljesen leállításra és áramtalanításra került, majd hidegindítás történt.
 
-A BIOS Setup ezután ismét az eredeti Fujitsu LAN MAC-címet mutatta.
+A BIOS Setup ismét az eredeti Fujitsu LAN-azonosságot mutatta.
 
-A repositoryban a valódi érték helyett:
+A nyilvános repozitóriumban ez továbbra is:
 
 ```text
 <REDACTED_FUJITSU_MAC>
 ```
 
-szerepel.
+formában szerepel.
 
-A Debian indulása után a Linux hálózati interfésze szintén ezt az eredeti hardveres azonosságot használta.
+A Debian indulása után Linux is a helyreállított eredeti hardveres identitást használta.
 
 A korábbi:
 
@@ -1178,42 +1190,40 @@ Permanent address: not set
 
 állapot megszűnt.
 
-Ezzel teljessé vált a bizonyítéki lánc.
+A bizonyítási lánc teljessé vált.
 
 ---
 
-# 31. A kialakult bizonyítéki lánc
-
-A teljes folyamat a következőképpen foglalható össze:
+# 31. A létrejött bizonyítási lánc
 
 ```text
-Eredeti gép SPI-je
+Eredeti gép SPI
         ↓
 gépspecifikus MAC jelen van a Fujitsu OEM-régióban
         ↓
 hivatalos Fujitsu firmware
         ↓
-ugyanaz a mező FF:FF:FF:FF:FF:FF template
+ugyanez a mező FF:FF:FF:FF:FF:FF sablont tartalmaz
         ↓
-Fujitsu recovery helyreállítja a POST-ot
+Fujitsu recovery visszaállítja a POST-ot
         ↓
-BIOS MAC = 00:00:00:00:00:00
+BIOS MAC 00:00:00:00:00:00 lesz
         ↓
-Linux nem talál permanent MAC-et
+Linux nem talál permanens MAC-ot
         ↓
 RSET8168 Linuxon kívül is nullás címet mutat
         ↓
 nincs érvényes külső EEPROM
         ↓
-Realtek eFuse közvetlen kiolvasása
+közvetlen Realtek eFuse-kiolvasás
         ↓
 üres FF állapot + Efuse Write Count = 0
         ↓
 recovery utáni SPI belső kiolvasása
         ↓
-a Fujitsu OEM MAC-mező ismét FF template
+Fujitsu OEM MAC-mező FF sablont tartalmaz
         ↓
-csak az eredeti 64 KiB-os OEM-blokk visszaállítása
+eredeti 64 KiB-os OEM-blokk visszaállítása
         ↓
 fizikai írás független ellenőrzése
         ↓
@@ -1221,525 +1231,523 @@ hidegindítás
         ↓
 eredeti Fujitsu MAC visszatér a BIOS-ban
         ↓
-Linux permanent hálózati azonossága helyreáll
+Linux permanens hálózati identitása helyreáll
 ```
 
-A megfigyelések együtt erős támogatást adnak a következő értelmezéshez:
+A megfigyelések együtt erősen támogatják azt az értelmezést, hogy:
 
-> **A vizsgált D3313-E1 rendszeren a Realtek RTL8168G családba tartozó vezérlő gépspecifikus Ethernet-azonosságát a Fujitsu platformfirmware inicializálja, nem pedig egy korábban programozott Realtek eFuse-ból olvassa ki.**
+> **A vizsgált D3313-E1-en a Realtek RTL8168G-család vezérlője gépspecifikus Ethernet-azonosságát a Fujitsu platformfirmware-ből kapja inicializáláskor, nem pedig egy korábban programozott vezérlő-eFuse-ból.**
 
-Ez a következtetés a vizsgált konkrét hardverre vonatkozik.
+Ez a következtetés a vizsgált példányra vonatkozik.
 
-Ahhoz, hogy az egész D3313 platformcsaládra általánosítható legyen, további alaplapokon végzett reprodukció szükséges.
-
----
-
-# 32. Mit bizonyított a vizsgálat?
-
-A rendelkezésre álló bizonyítékok az alábbi megállapításokat támogatják:
-
-1. a működésképtelen D3313-E1 alaplap Fujitsu recovery segítségével ismét POST-képessé tehető;
-2. két független SPI-kiolvasás és kriptográfiai összehasonlítás megbízható firmware-referenciát biztosít;
-3. az eredeti gép image-e és a hivatalos Fujitsu R1.16 firmware 128 darab 64 KiB-os blokkból 127-ben azonos;
-4. a fő gépspecifikus személyre szabás egyetlen 64 KiB-os OEM/manufacturing régióban koncentrálódik;
-5. ebben a régióban több egyedi gép- és platformazonosító található;
-6. a hivatalos gyári image `FF` template-értéket tartalmaz a LAN MAC-mezőben;
-7. az eredeti gép SPI-je ugyanebben a mezőben a tényleges Fujitsu MAC-címet tartalmazza;
-8. a recovery után a fizikai SPI ezen a helyen visszatért a gyári template-állapotba;
-9. a Realtek vezérlő nem rendelkezett használható külső EEPROM-mal;
-10. az eFuse a vizsgált példányban programozatlannak látszott;
-11. a vizsgált gép LAN-azonossága ezért nem programozott Realtek eFuse-tárolóból származott;
-12. a teljes SPI belsőleg is megbízhatóan kiolvasható Linux `flashrom` segítségével;
-13. a hiányzó OEM-régió pontosan izolálható;
-14. kizárólag ez a 64 KiB-os régió írható vissza;
-15. a fizikai írás külön verify művelettel ellenőrizhető;
-16. az OEM-régió visszaállítása helyreállította az eredeti LAN-azonosságot a BIOS-ban és Linux alatt is.
+További D3313 rendszereken végzett reprodukció szükséges ahhoz, hogy az egész platformcsaládra általánosítható legyen.
 
 ---
 
-# 33. Amit a vizsgálat nem bizonyít
+# 32. Mit bizonyított a vizsgálat
 
-A projekt **nem** bizonyítja, hogy:
+A rendelkezésre álló bizonyítékok az alábbiakat támasztják alá:
+
+1. a működésképtelen D3313-E1 Fujitsu recovery segítségével ismét POST-képessé tehető;
+2. két független SPI-kiolvasás és kriptográfiai ellenőrzés megbízható baseline-t adott;
+3. az eredeti gép firmware-e és a hivatalos Fujitsu R1.16 128 darab 64 KiB-os blokkból 127-ben azonos volt;
+4. a fő gépspecifikus személyre szabás egyetlen 64 KiB-os OEM/manufacturing régióban koncentrálódott;
+5. ez a régió több gépspecifikus mezőt tartalmazott;
+6. a hivatalos firmware `FF` sablonértéket használt a LAN MAC helyén;
+7. az eredeti gép dumpja ugyanott a valódi Fujitsu MAC-ot tartalmazta;
+8. recovery után a fizikai SPI visszaállt a gyári sablon-MAC állapotba;
+9. a Realtek vezérlő nem mutatott érvényes külső EEPROM-ot;
+10. az eFuse látszólag soha nem került programozásra;
+11. ezért a vizsgált gép LAN-azonossága nem programozott Realtek eFuse-ból származott;
+12. a teljes recovery utáni SPI Linux alól belső módszerrel kiolvasható volt;
+13. a pontos hiányzó OEM-régió izolálható volt;
+14. csak ez az egy 64 KiB-os régió volt visszaállítható;
+15. a fizikai írás külön ellenőrizhető volt;
+16. a Fujitsu OEM-régió visszaállítása helyreállította az eredeti LAN-azonosságot BIOS és Linux alatt is.
+
+---
+
+# 33. Mit nem bizonyított a vizsgálat
+
+A projekt **nem bizonyítja**, hogy:
 
 - minden D3313-E1 pontosan ugyanígy működik;
-- minden FUTRO S930 ugyanilyen mechanizmussal tárolja a hálózati azonosságot;
-- minden Fujitsu recovery elveszíti a személyre szabott MAC-adatot;
-- a recovery algoritmust teljesen visszafejtettük;
-- a RESERVED jumperállás biztonságos;
+- minden FUTRO S930 ugyanezen a módon tárolja a hálózati identitást;
+- minden Fujitsu recovery eltávolítja a személyre szabott MAC-adatot;
+- a teljes recovery-algoritmus reverse engineeringje elkészült;
+- a RESERVED jumperpozíció biztonságos;
 - a használt USB-port hivatalos recovery-követelmény;
-- ezen a platformon minden RTL8168G eFuse-ja üres;
-- a megoldatlan mSATA-probléma biztosan hardveres eredetű;
-- vagy hogy a projektben alkalmazott firmware-elemzési és recovery technikákat ez a munka találta fel.
+- a platform összes RTL8168G vezérlője programozatlan eFuse-t használ;
+- a különálló mSATA-hiba firmware-rel kapcsolatos;
+- vagy hogy a projekt találta fel a felhasznált firmware-elemzési módszereket.
 
-A repository legerősebb állításai tudatosan a vizsgált konkrét rendszeren közvetlenül megfigyelhető eredményekre korlátozódnak.
+Az állítások szándékosan a rendelkezésre álló bizonyítékokra korlátozódnak.
 
 ---
 
-# 34. Különálló, megoldatlan probléma: 16 GB mSATA
+# 34. Külön nyitott probléma: 16 GB mSATA
 
-Az OEM-azonosság helyreállítása után külön megvizsgáltuk a gépbe szerelt 16 GB-os mSATA SSD-t.
+Az OEM-azonosság helyreállítása után a beépített 16 GB-os mSATA SSD külön vizsgálat tárgya lett.
 
-Linux alatt két SATA vezérlő egyértelműen felismerhető:
+Linux sikeresen érzékeli:
 
 ```text
 AMD FCH AHCI
 ASMedia ASM1061/ASM1062 AHCI
 ```
 
-A 240 GB-os Kingston SATA SSD stabilan felismerhető, és:
+vezérlőket.
+
+A 240 GB-os Kingston SATA SSD megbízhatóan megjelenik, és:
 
 ```text
 6.0 Gbps
 ```
 
-sebességű SATA-linket épít fel.
+sebességen linkel.
 
-A 16 GB-os mSATA eszköz ezzel szemben:
+A 16 GB-os mSATA eszköz viszont:
 
-- nem jelenik meg az `lsblk` kimenetében;
-- nem jut el ATA eszközazonosításig;
-- nem jelenik meg blokkos eszközként;
-- az érintett SATA útvonalakon `SATA link down` állapot marad.
+- nem jelenik meg `lsblk` alatt;
+- nem jut el ATA device identification állapotig;
+- nem hoz létre felismerhető blokkeszközt;
+- a releváns SATA-útvonal `SATA link down` állapotban marad.
 
-Az eredeti Fujitsu OEM-blokk helyreállítása ezen a viselkedésen nem változtatott.
+Az eredeti Fujitsu OEM-blokk visszaállítása nem változtatott ezen.
 
-Jelenleg ezért nincs bizonyíték arra, hogy az mSATA-probléma ugyanahhoz a firmware-hibához tartozik.
+Jelenleg nincs bizonyíték arra, hogy az mSATA-probléma része lenne a korábbi firmware-hibának.
 
 Lehetséges okok:
 
 - hibás mSATA SSD;
-- érintkezési probléma;
-- hiányzó foglalati tápellátás;
+- csatlakozási/kontaktprobléma;
+- hiányzó foglalattáp;
 - sérült SATA jelút;
-- alaplapi hardverhiba;
-- vagy más, jelenleg még nem azonosított konfigurációs mechanizmus.
+- alaplapi sérülés;
+- egyelőre azonosítatlan más konfigurációs mechanizmus.
 
 Ez továbbra is:
 
-**`[OPEN QUESTION]`**
+```text
+[OPEN QUESTION]
+```
 
-és szándékosan elkülönítve szerepel a már lezárt firmware-helyreállítástól.
+és szándékosan elkülönül a befejezett firmware-helyreállítástól.
 
 ---
 
-# 35. Külön hardveres incidens: a SATA-adapter elmozdulása
+# 35. Külön hardveres incidens: mozgó SATA-adapter
 
-A vizsgálat során a Kingston SATA SSD-t tartó adapter a gép működése közben mechanikailag elmozdult.
+Tesztelés közben a Kingston SATA SSD-t tartó adapter működés közben elmozdult.
 
-A Linux azonnal többek között:
+Linux azonnal naplózott:
 
-- ATA bus error;
-- BadCRC;
-- handshake/link hiba;
-- I/O error
+- ATA buszhibákat;
+- BadCRC hibákat;
+- handshake/link hibákat;
+- I/O hibákat.
 
-üzeneteket naplózott.
+A fájlrendszer emiatt read-only állapotba kerülhetett.
 
-A fájlrendszer ennek következtében read-only állapotba is kerülhetett.
+Az adapter fizikai stabilizálása és reboot után a hibák megszűntek.
 
-Az adapter stabil visszahelyezése és újraindítás után ezek a SATA-hibák eltűntek.
+Ez külön incidens, nem azonos a nyitott mSATA-problémával.
 
-Ezt az incidenst nem szabad összekeverni a különálló mSATA-problémával.
+Ugyanakkor bizonyítja, hogy az ideiglenes adapterrögzítés nem megfelelő tartós használatra.
 
-Ugyanakkor egyértelműen megmutatta, hogy az ideiglenes mechanikai rögzítés nem alkalmas tartós használatra.
-
-A tervezett javítás:
+A tervezett mechanikai megoldás:
 
 ```text
 M2 nylon/műanyag távtartók
-körülbelül 6 mm
+kb. 6 mm
 ```
 
-és megfelelő csavarok alkalmazása.
+megfelelő rögzítőelemekkel.
 
 ---
 
-# 36. Módszertani elv: a minimálisan szükséges beavatkozás
+# 36. A minimálisan szükséges módosítás elve
 
-A helyreállításból egy általános elv is kirajzolódott:
+A projekt egyik központi módszertani következtetése:
 
-> **Ne írjunk újra több firmware-t annál, mint amennyiről bizonyítottuk, hogy ténylegesen meg kell változtatni.**
+> **Ne írjunk újra több firmware-t annál, mint amennyiről bizonyított, hogy módosításra szorul.**
 
 Ebben az esetben:
 
 - rendelkezésre állt a teljes eredeti SPI-image;
-- rendelkezésre állt egy teljes, működő recovery utáni image;
-- azonosítottuk a gépspecifikus régiót;
-- mindössze 3526 byte tért el egyetlen 64 KiB-os blokkon belül;
-- ezért a firmware aktuális, működő állapotának többi része érintetlenül maradhatott.
+- rendelkezésre állt a teljes működő recovery utáni image;
+- a személyre szabott régió azonosításra került;
+- csak 3526 byte tért el egyetlen 64 KiB-os blokkon belül;
+- a működő firmware többi része érintetlenül megőrizhető volt.
 
-A végső művelet:
+A végső beavatkozás:
 
 ```text
-64 KiB-ot módosított egy 8 MiB-os flashből
+64 KiB egy 8 MiB-os flashből
 ```
 
-Ez csökkenti annak kockázatát, hogy szükségtelenül változzon:
+területre korlátozódott.
+
+Ez csökkentette a szükségtelen módosításokat:
 
 - NVRAM;
-- bootváltozó;
-- futásidejű állapot;
-- recovery által létrehozott adat;
-- ismeretlen funkciójú firmware-struktúra.
+- bootváltozók;
+- runtime állapot;
+- recovery során keletkezett adatok;
+- ismeretlen firmware-struktúrák
 
-Ez az elv más firmware-helyreállítási munkafolyamatokban is hasznos lehet.
+esetében.
+
+Ez az elv más firmware-helyreállítási vizsgálatok során is hasznos lehet.
 
 ---
 
 # 37. Reprodukálhatóság
 
-A legerősebb eredményeket további hardvereken is reprodukálni kellene.
+A legerősebb eredményeket érdemes további hardvereken is reprodukálni.
 
-Különösen értékes kísérlet lenne egy második D3313-E1 rendszer vizsgálata, amelynél össze lehetne hasonlítani:
+Egy második D3313-E1-en különösen hasznos lenne összehasonlítani:
 
 - az OEM/manufacturing blokk helyét;
 - az FFS GUID-okat;
-- a redundáns rekordok struktúráját;
-- a gyári template-értékeket;
-- az eredeti gép MAC-tárolását;
+- a duplikált struktúrák elrendezését;
+- a sablonértékeket;
+- a gépspecifikus MAC tárolását;
 - a Realtek eFuse állapotát;
 - a Fujitsu recovery viselkedését;
 - a recovery utáni OEM-állapotot;
-- a szelektív OEM-helyreállítás eredményét.
+- a szelektív OEM-visszaállítás eredményét.
 
-A reprodukció lehetővé tenné annak pontosabb meghatározását, hogy az itt dokumentált működés:
+Ez segítene eldönteni, hogy a megfigyelések:
 
-- egyetlen konkrét példányra jellemző;
-- a D3313-E1 modell tulajdonsága;
-- vagy a szélesebb D3313 platformcsaládra is általánosítható.
+- csak egy példányra jellemzők;
+- D3313-E1 specifikusak;
+- vagy szélesebb D3313 családra is általánosíthatók.
 
 ---
 
 # 38. Korlátok
 
-A vizsgálatnak több fontos korlátja van.
+## 38.1. Egyetlen elsődleges vizsgálati példány
 
-### Egyetlen elsődleges példány
+A teljes recovery-vizsgálat egy D3313-E1 rendszeren történt.
 
-A teljes vizsgálat egyetlen D3313-E1 rendszeren történt.
+Ezért populációszintű általánosítás nem indokolt.
 
-Ez nem teszi lehetővé populációszintű általánosítások megfogalmazását.
+## 38.2. A recovery-algoritmus nincs teljesen reverse engineeringgel feltárva
 
-### A recovery algoritmus nem teljesen ismert
+A recovery megfigyelhető eredménye dokumentált, de a teljes belső implementáció nem ismert.
 
-A Fujitsu recovery megfigyelhető eredménye dokumentált, de a belső recovery implementációt még nem fejtettük vissza.
+## 38.3. Részben dokumentálatlan OEM-mezők
 
-### Részben dokumentálatlan OEM-mezők
+Több gépspecifikus mezőnév azonosításra került, de sok pontos funkciója ismeretlen.
 
-Több gépspecifikus mezőnevet azonosítottunk, de pontos funkciójuk jelentős része továbbra sem ismert.
+## 38.4. Nem történt destruktív redundanciateszt
 
-### Nem történt destruktív redundanciateszt
+A látszólag redundáns OEM-struktúrák fallback-viselkedése szándékos sérüléssel nem került tesztelésre.
 
-A két látszólag redundáns OEM-struktúrát szándékosan nem sértettük meg azért, hogy megfigyeljük a fallback viselkedést.
+## 38.5. Az mSATA-probléma nincs lezárva
 
-### Az mSATA-probléma megoldatlan
+A nem detektált 16 GB-os mSATA SSD még nem került teljes, független keresztpróbára.
 
-A nem detektált 16 GB-os mSATA meghajtót még nem próbáltuk ki függetlenül más rendszerben vagy külső adapterrel.
+## 38.6. Adatvédelmi korlátozások
 
-### Adatvédelmi korlátozások
-
-Az eredeti személyre szabott firmware teljes egészében nem publikálható, mert gépspecifikus adatokat tartalmaz.
-
-Ezeket a korlátokat szándékosan dokumentáljuk, hogy az adat hiánya ne legyen összetéveszthető negatív eredménnyel.
+A teljes személyre szabott firmware felelősen nem publikálható, mert gépspecifikus információkat tartalmaz.
 
 ---
 
-# 39. További kutatási irányok
+# 39. Jövőbeli kutatási irányok
 
-A helyreállított rendszer több további vizsgálathoz is platformot biztosít.
+## 39.1. Fujitsu recovery write-map rekonstrukció
 
-## 39.1. A Fujitsu recovery tényleges írási térképének rekonstruálása
+Az egyik legerősebb nyitott kérdés, hogy miért nem maradtak meg a recovery forrásban meglévő személyre szabott adatok a fizikai SPI-ben.
 
-Az egyik legfontosabb nyitott kérdés, hogy a recoveryhez adott forrásimage-ben jelen lévő személyre szabott adat miért nem maradt meg a fizikai SPI-ben.
-
-Kontrollált teszt-image-ek készíthetők, amelyekben nem kritikus régiókban előre meghatározott markerértékeket módosítunk.
-
-A recovery után a fizikai SPI ismét kiolvasható és összehasonlítható.
-
-Ez megmutathatná:
+Kontrollált tesztimage-ekkel potenciálisan meghatározható lenne:
 
 - mely régiókat másolja;
-- melyeket hagyja figyelmen kívül;
-- melyeket rekonstruálja;
+- melyeket hagyja ki;
+- melyeket generálja újra;
 - melyeket őrzi meg;
-- és léteznek-e speciális manufacturing szabályok.
+- van-e manufacturing-specifikus szabályrendszer.
 
-Az eredmény egy formális **D3313 recovery write-map** lehetne.
-
----
-
-## 39.2. Az OEM/manufacturing struktúra teljes visszafejtése
-
-A 64 KiB-os régió láthatóan sokkal több információt tartalmaz, mint pusztán a LAN MAC-cím.
-
-Több rendszer anonimizált dumpjainak összehasonlításával vizsgálható lenne:
-
-- mely mezők állandók;
-- melyek modellfüggők;
-- melyek alaplapspecifikusak;
-- melyek gépenként egyediek;
-- vannak-e számlálók;
-- milyen integritási mezők vannak;
-- melyek feature flag-ek;
-- melyek kapcsolódhatnak biztonsági funkciókhoz.
-
-Ez hosszabb távon a D3313 manufacturing adatstruktúra dokumentált specifikációjához vezethet.
+Ebből formális **D3313 recovery write map** készülhetne.
 
 ---
 
-## 39.3. A redundáns OEM-struktúrák működése
+## 39.2. OEM/manufacturing struktúra reverse engineeringje
 
-A két kapcsolódó FFS-struktúra további kutatást igényel.
+A 64 KiB-os régió láthatóan sokkal többet tartalmaz, mint a LAN MAC.
 
-Nyitott kérdések:
+Több anonimizált gép dumpjának összehasonlítása elkülöníthetné:
 
-- egyikük elsődleges példány?
-- a másik tartalék?
-- van generációszámláló?
-- érvényességi flag alapján választ a firmware?
-- képes egyikből rekonstruálni a másikat?
-- mi történik, ha csak az egyik példány tartalmaz érvényes MAC-et?
-
-Ezeket célszerű lenne külön, tartalék tesztplatformon vizsgálni, hogy ne veszélyeztessük a már helyreállított rendszert.
+- invariáns mezőket;
+- modellfüggő mezőket;
+- boardspecifikus mezőket;
+- gépazonosítókat;
+- számlálókat;
+- integritási mezőket;
+- feature flageket;
+- biztonsághoz kapcsolódó mezőket.
 
 ---
 
-## 39.4. A NIC inicializálásáért felelős UEFI modul azonosítása
+## 39.3. Redundáns OEM-struktúrák működése
 
-Az OEM-blokk visszaállítása után a helyes Realtek MAC-cím visszatért.
+A két hasonló FFS-struktúra kapcsán nyitott kérdések:
 
-A következő logikus kérdés:
+- melyik az elsődleges?
+- melyik a tartalék?
+- van-e generációszámláló?
+- érvényességi flag választ közöttük?
+- az egyikből rekonstruálható a másik?
+- mi történik, ha csak az egyik érvényes?
 
-> **Melyik firmware-komponens olvassa ki a Fujitsu OEM-adatokat és írja azokat a Realtek vezérlőbe?**
+Egy tartalék platform biztonságos kontrollkísérleteket tenne lehetővé.
 
-Lehetséges kutatási módszerek:
+---
 
-- DXE modulok elemzése;
+## 39.4. A hálózati inicializációért felelős UEFI-modul
+
+Az OEM-blokk visszaállítása helyreállította a Realtek-identitást.
+
+A következő kérdés:
+
+> **Mely firmware-komponens olvassa be a Fujitsu OEM-adatot és inicializálja a Realtek vezérlőt?**
+
+Lehetséges módszerek:
+
+- DXE-modul elemzés;
 - PCI inicializáció követése;
-- string- és GUID-korreláció;
-- MMIO-regiszterek vizsgálata;
+- GUID/string korreláció;
+- MMIO register tracing;
 - emulátorral támogatott elemzés;
-- bootidő alatti instrumentáció.
-
-A felelős modul azonosítása a jelenlegi viselkedésalapú bizonyítékot részletes implementációs modellé alakíthatná.
+- boottime instrumentáció.
 
 ---
 
-## 39.5. Más, OEM-adatokból inicializált hardverfunkciók
+## 39.5. Más hardverek inicializálása OEM-adatból
 
-A MAC eredménye szélesebb kérdést vet fel.
+A MAC-eredmény szélesebb architekturális kérdést vet fel.
 
-Ha a hálózati vezérlő gépspecifikus konfigurációt kap az OEM-régióból, akkor lehetséges, hogy más hardverfunkciók is hasonlóan működnek.
+Ha a hálózati identitás OEM-régióból származik, más hardverfunkciók is használhatják ugyanezt.
 
-Lehetséges vizsgálati célok:
+Lehetséges célok:
 
 - SATA/mSATA viselkedés;
-- TPM konfiguráció;
-- HDCP-adatok;
-- alaplapi funkciók engedélyezése;
-- licencinformációk;
-- PCIe eszközkonfiguráció;
+- TPM-konfiguráció;
+- HDCP-információ;
+- feature enablement;
+- licensing adatok;
+- PCIe-eszközkonfiguráció;
 - platformazonosság.
-
-Az mSATA problémáját ezért továbbra is külön kell kezelni, miközben az OEM-függő konfiguráció tesztelhető hipotézis maradhat.
 
 ---
 
 ## 39.6. D3313 E, B és S variánsok összehasonlítása
 
-A D3313 család több változatban létezik.
+A D3313 család több variánsban létezik.
 
-Keresztplatformos összehasonlítással meghatározható lenne:
+Keresztplatformos összehasonlítás megmutathatná:
 
-- azonosak-e az OEM FFS GUID-ok;
-- ugyanazon offseteken található-e a manufacturing régió;
-- mennyire kompatibilis az adatstruktúra;
-- hasonlóan működik-e a recovery;
-- mely dokumentációk használhatók biztonságosan több variáns architekturális referenciájaként.
-
-Ez segíthet elválasztani az általános platformarchitektúrát a konkrét modell implementációjától.
+- közösek-e az OEM FFS GUID-ok;
+- ugyanazon offseteken van-e a manufacturing régió;
+- kompatibilis-e a mezőstruktúra;
+- hasonló-e a recovery-viselkedés;
+- mely dokumentáció általánosítható biztonságosan.
 
 ---
 
 ## 39.7. Automatizált firmware-differenciálás
 
-A jelenlegi elemzés több lépése automatizálható.
+Az elemzés jelentős része automatizálható lehet.
 
-Egy jövőbeli segédprogram például elvégezhetné:
+Egy jövőbeli eszköz elvégezhetné:
 
 ```text
 image-méret ellenőrzés
-SHA256 számítás
-blokk-szintű diff
-FV validáció
-FFS validáció
-OEM string felismerés
+SHA256 hashing
+blokkszintű összehasonlítás
+FV-validáció
+FFS-validáció
+OEM string detektálás
 gépspecifikus mezők osztályozása
 adatvédelmi kockázatok felismerése
 flashrom layout generálás
 ```
 
-Ezzel hasonló firmware-helyreállítások gyorsabbá és kevésbé hibakockázatossá válhatnának.
+Ez gyorsabbá és kevésbé hibakockázatossá tehetné a hasonló vizsgálatokat.
 
 ---
 
-## 39.8. Firmware privacy sanitizer
+## 39.8. Firmware adatvédelmi sanitizer
 
-A projekt bizonyítja, hogy az SPI-image-ek olyan gépspecifikus információkat tartalmazhatnak, amelyeket nem célszerű nyilvánosan terjeszteni.
+Mivel egy nyers SPI-image gépazonosító adatokat tartalmazhat, külön sanitizer képes lehetne felismerni vagy kitakarni:
 
-Külön sanitizer eszköz készülhetne többek között az alábbi adatok felismerésére vagy anonimizálására:
+- MAC-címeket;
+- sorozatszámokat;
+- UUID-ket;
+- PC ID-ket;
+- manufacturing azonosítókat;
+- más ismert érzékeny struktúrákat.
 
-- MAC-cím;
-- sorozatszám;
-- UUID;
-- PC ID;
-- manufacturing azonosítók;
-- ismert credential-szerű struktúrák.
-
-Egy adatvédelmi szempontból biztonságos firmware-megosztó eszköz a D3313 platformon túl is hasznos lehetne.
+Egy privacy-aware firmware-sharing tool a D3313 családon túl is hasznos lehetne.
 
 ---
 
 ## 39.9. Recovery hangjelzések elemzése
 
-A recovery folyamat jól elkülöníthető hangjelzéseket adott.
+A recovery felismerhető sípolási mintákat produkált.
 
-A teljes hangfolyamat pontos időzítéssel történő rögzítése lehetővé tehetné annak vizsgálatát, hogy egyes hangminták megfelelnek-e:
+Teljes, pontos időzítéssel rögzített hangsorok esetleg összekapcsolhatók lennének:
 
-- eszközfelismerésnek;
-- törlésnek;
-- programozásnak;
-- verify fázisnak;
-- sikeres befejezésnek;
-- hibának.
+- eszközfelismeréssel;
+- törléssel;
+- programozással;
+- verificationnel;
+- sikerrel;
+- hibával.
 
-Ez különösen olyan esetekben lehet hasznos, amikor recovery alatt nincs videokimenet.
+Ez különösen akkor lehet hasznos, amikor nincs videokimenet.
 
 ---
 
-## 39.10. Hardver- és firmware-hibák szétválasztásának módszertana
+## 39.10. Hardver- és firmware-hibák elkülönítése
 
-A kiinduló helyzet azért volt különösen érdekes esettanulmány, mert egyszerre volt reális a mechanikai sérülés és a firmware-hiba lehetősége.
+Az eredeti meghibásodás azért volt diagnosztikailag érdekes, mert mechanikai sérülés és firmware-hiba egyaránt hihető volt.
 
-A kialakult diagnosztikai sor:
+A kialakult módszertan:
 
 ```text
-fizikai ellenőrzés
+fizikai vizsgálat
         ↓
 multiméteres mérések
         ↓
 külső SPI-kiolvasás
         ↓
-kettős kiolvasás ellenőrzése
+dupla kiolvasás ellenőrzése
         ↓
-gyári firmware-rel való összehasonlítás
+gyári firmware-rel összehasonlítás
         ↓
-UEFI struktúraelemzés
+UEFI strukturális elemzés
         ↓
 recovery
         ↓
-operációs rendszer alatti diagnosztika
+operációs rendszer szintű diagnosztika
         ↓
 DOS hardverdiagnosztika
         ↓
-vezérlő NVM közvetlen vizsgálata
+közvetlen vezérlő-NVM vizsgálat
         ↓
 belső SPI-kiolvasás
         ↓
-minimális szelektív helyreállítás
+minimális szelektív visszaállítás
 ```
 
-Ez a folyamat általános keretként is használható lehet olyan beágyazott rendszerek vizsgálatakor, ahol a meghibásodás eredete nem ismert.
+Ez általános keretrendszerként is hasznos lehet olyan beágyazott rendszereknél, ahol a hiba eredete nem egyértelmű.
 
 ---
 
 # 40. Szélesebb firmware-forenzikai jelentőség
 
-A projekt egyik általános tanulsága:
+Az egyik fontosabb általános tanulság:
 
-> **A „gyári BIOS-image” és „egy konkrét gép teljes firmware-állapota” nem feltétlenül ugyanaz.**
+> **A „gyári BIOS image” és egy konkrét gép teljes firmware-állapota nem feltétlenül ugyanaz.**
 
-Egy tényleges rendszer firmware-azonossága több rétegből állhat:
+Egy legyártott rendszer több réteget tartalmazhat:
 
 ```text
 generikus gyártói firmware
 gépspecifikus manufacturing adatok
-futásidejű NVRAM
+runtime NVRAM
 hardverazonosság
-licencinformáció
+licencelési információ
 biztonsági konfiguráció
 platformspecifikus kalibráció
 ```
 
-Egy generikus gyártói image vak visszaírása ezért helyreállíthatja a bootképességet úgy, hogy közben elvesznek egyedi rendszertulajdonságok.
+Egy generikus gyártói image visszaírása helyreállíthatja a bootképességet, miközben eltávolíthat olyan tulajdonságokat, amelyek az adott konkrét géphez tartoznak.
 
-Ebben az esetben a jól látható elveszett tulajdonság a LAN-azonosság volt.
+Ebben az esetben a látható elveszett tulajdonság a LAN-azonosság volt.
 
-Más platformokon ilyen egyedi adatok lehetnek például:
+Más rendszereken gépspecifikus adat lehet például:
 
-- rendszer-sorozatszámok;
-- UUID-k;
-- Windows/OEM licencadatok;
-- kalibrációs értékek;
-- TPM konfiguráció;
-- alaplapi feature flag-ek;
-- hálózati azonosítók.
+- sorozatszám;
+- UUID;
+- OEM licencinformáció;
+- kalibrációs adat;
+- TPM-konfiguráció;
+- boardspecifikus feature flag;
+- hálózati identitás.
 
-Firmware-javítás során ezért különbséget kell tenni **a bootolhatóság helyreállítása** és **a teljes gépspecifikus állapot helyreállítása** között.
+Firmware-javításkor ezért külön kell kezelni:
+
+**bootképességet**
+
+és:
+
+**a teljes gépspecifikus állapot helyreállítását**.
 
 ---
 
-# 41. Biztonsági megfontolások
+# 41. Biztonsági szempontok
 
-Az SPI flash módosítása működésképtelenné teheti az alaplapot.
+Az SPI flash módosítása bootképtelenné teheti a hardvert.
 
-Az itt alkalmazott módszertan ezért erősen preferálja:
+Az itt alkalmazott módszertan erősen preferálja:
 
-- több független kiolvasást;
-- kriptográfiai hash-ellenőrzést;
+- több egymástól független kiolvasást;
+- kriptográfiai hash-ek használatát;
 - az eredeti dumpok változatlan archiválását;
-- a flash chip pontos azonosítását;
-- írás előtti verify műveletet;
-- a lehető legkisebb írási területet;
-- írás utáni független ellenőrzést.
+- a flash pontos azonosítását;
+- írás előtti verificationt;
+- a lehető legkisebb írási tartományt;
+- külön, független írás utáni ellenőrzést.
 
-Az OTP/eFuse programozást külön kell kezelni a normál flash-programozástól.
+Az OTP/eFuse programozást más kategóriaként kell kezelni, mint az újraírható flashmemóriát.
 
-Visszafordíthatatlan vagy korlátozottan írható tároló módosítása előtt ismerni kell:
+Visszafordíthatatlan vagy korlátozottan írható tároló módosítása előtt meg kell érteni:
 
-- milyen adat kerül beírásra;
-- visszaállítható-e a művelet;
-- valóban ezt a tárolási mechanizmust használta-e eredetileg az adott platform;
-- mennyi írható kapacitás maradt;
-- létezik-e kevésbé invazív helyreállítási lehetőség.
+- pontosan milyen adatot írunk;
+- visszafordítható-e;
+- eredetileg használta-e ezt a mechanizmust a rendszer;
+- mennyi programozható kapacitás maradt;
+- létezik-e kevésbé invazív helyreállítási út.
+
+A teljes jogi és biztonsági nyilatkozat:
+
+[DISCLAIMER.md](DISCLAIMER.md)
+
+Magyar változat:
+
+[DISCLAIMER.hu.md](DISCLAIMER.hu.md)
 
 ---
 
-# 42. A repository adatvédelmi szabályai
+# 42. A repozitórium adatvédelmi szabályai
 
-A nyilvános repository nem tartalmazhat:
+A nyilvános repozitórium nem tartalmazhat kitakarás nélkül:
 
-- eredeti személyre szabott SPI-image-et;
+- személyre szabott nyers SPI-image-et;
 - teljes gépsorozatszámot;
 - PC ID-t;
 - UUID-t;
 - teljes gépspecifikus MAC-címet;
-- HDCP- vagy más gépspecifikus manufacturing titkot;
-- személyes operációsrendszer-felhasználónevet;
-- privát helyi fájlútvonalat;
-- EXIF/GPS metaadatot;
-- olvasható azonosító matricát;
-- gépazonosságot tartalmazó QR-kódot vagy vonalkódot.
+- HDCP- vagy hasonló gépspecifikus titkot;
+- privát operációs rendszeres felhasználónevet;
+- privát helyi fájlrendszer-útvonalat;
+- szükségtelen EXIF/GPS-metaadatot;
+- azonosítható címkét;
+- eszközazonosságot tartalmazó QR-kódot vagy vonalkódot.
 
-Minden nyilvánosan közzétett képet, videót, hangfelvételt és firmware-részletet külön adatvédelmi ellenőrzésnek kell alávetni.
+Képernyőképet, fotót, videót, hangfelvételt, firmware-részletet és logot publikálás előtt adatvédelmi szempontból ellenőrizni kell.
 
-Nyers médiafájl közvetlenül nem kerülhet a repositoryba.
+Személyre szabott nyers firmware-t közvetlenül commitolni nem szabad.
 
 ---
 
-# 43. Tervezett repository-struktúra
+# 43. A repozitórium tervezett szerkezete
 
-A repository várható felépítése:
+A projekt hosszabb távú struktúrája:
 
 ```text
 /
@@ -1749,6 +1757,7 @@ A repository várható felépítése:
 ├── CITATION.cff
 ├── SOURCES.md
 ├── DISCLAIMER.md
+├── DISCLAIMER.hu.md
 ├── docs/
 │   ├── en/
 │   └── hu/
@@ -1758,52 +1767,48 @@ A repository várható felépítése:
     └── public/
 ```
 
-Személyre szabott firmware-image soha nem kerülhet a nyilvános könyvtárstruktúrába.
+Személyre szabott firmware-image-ek nem kerülhetnek a nyilvános fába.
 
 ---
 
 # 44. Korábbi munkák és forrásmegjelölés
 
-A projekt **nem állítja**, hogy a firmware-recovery, UEFI-elemzés, SPI-programozás vagy Realtek-diagnosztika alaptechnikáit ez a munka találta fel.
+Ez a projekt **nem állítja**, hogy feltalálta volna az alkalmazott firmware-helyreállítási, UEFI-elemzési, SPI-programozási vagy Realtek diagnosztikai technikákat.
 
-A vizsgálat már létező gyártói dokumentációkra, nyílt forrású eszközökre és korábbi közösségi kutatásokra épít.
+A munka gyártói dokumentációra, nyílt forrású eszközökre és korábbi közösségi kutatásokra épül.
 
-A fontosabb előzményterületek:
+Releváns területek:
 
 - Fujitsu D3313 dokumentáció;
-- Fujitsu BIOS- és recovery-anyagok;
-- kapcsolódó D3313 platformok későbbi Kontron dokumentációja;
+- Fujitsu BIOS- és recovery-dokumentáció;
+- kapcsolódó D3313 platformokra vonatkozó Kontron-dokumentáció;
 - `flashrom` projekt;
 - Realtek RSET8168;
-- Realtek PGTool dokumentáció és eszközök;
-- Fujitsu FUTRO rendszerekkel kapcsolatos közösségi munka;
-- korábbi D3313 firmware-módosítási és elemzési projektek;
-- általános UEFI reverse engineering és firmware-repair kutatások.
+- Realtek PGTool dokumentáció és tooling;
+- Fujitsu FUTRO rendszerekkel kapcsolatos közösségi kutatások;
+- korábbi D3313 firmware-elemzési projektek;
+- általános UEFI reverse engineering és javítási kutatások.
 
-A repository külön:
+A konkrét hivatkozások és attribúciók:
 
-```text
-SOURCES.md
-```
+[SOURCES.md](SOURCES.md)
 
-fájlban fogja tartalmazni a konkrét szerzői hivatkozásokat és közvetlen forráslinkeket.
+A projekt saját hozzájárulása:
 
-A projekt célja nem annak állítása, hogy az alkalmazott módszerek itt születtek.
-
-A hozzájárulás a már ismert módszerek **dokumentált kombinálása, független ellenőrzése és alkalmazása egy konkrét D3313-E1 helyreállítási esetben, valamint az ebből származó platformspecifikus megfigyelések rögzítése**.
+> **e módszerek dokumentált kombinálása, ellenőrzése és alkalmazása egy konkrét D3313-E1 recovery eseten, valamint az ebből származó platform-specifikus megfigyelések.**
 
 ---
 
-# 45. Az esettanulmány kutatási hozzájárulása
+# 45. Kutatási hozzájárulás
 
-A munka legfontosabb eredménye nem pusztán az, hogy egy számítógép újra működik.
+A projekt fő eredménye nem pusztán egy számítógép megjavítása.
 
-A projekt dokumentált kapcsolatot teremt:
+A munka dokumentált kapcsolatot teremt:
 
 ```text
 hivatalos firmware
         ↕
-személyre szabott gép-firmware
+személyre szabott gép firmware
         ↕
 manufacturing adatok
         ↕
@@ -1817,118 +1822,221 @@ közvetlen NVM-vizsgálat
         ↕
 recovery utáni fizikai SPI-állapot
         ↕
-minimális szelektív helyreállítás
+minimális szelektív visszaállítás
         ↕
-eredeti gépazonosság visszaállítása
+helyreállított gépazonosság
 ```
 
-Ez a bizonyítéki lánc több újrahasznosítható megfigyelést ad:
+Potenciálisan újrafelhasználható eredmények:
 
-- konkrét helyet a D3313-E1 gépspecifikus adatainak;
-- bizonyítékot arra, hogy a gyári firmware személyre szabási template-et tartalmaz;
-- bizonyítékot arra, hogy a vizsgált NIC eFuse-ja nem volt programozva;
-- bizonyítékot arra, hogy a platformfirmware képes a NIC azonosságát inicializálni;
-- bizonyítékot arra, hogy a Fujitsu recovery nem egyszerű nyers full-chip másolásként működik;
-- demonstrált minimális régiós helyreállítási módszert.
+- konkrét D3313-E1 gépspecifikus adatrégió azonosítása;
+- bizonyíték arra, hogy a hivatalos firmware személyre szabási sablonokat tartalmaz;
+- bizonyíték arra, hogy a vizsgált Realtek eFuse soha nem került programozásra;
+- bizonyíték arra, hogy platformfirmware biztosíthat NIC-identitást;
+- bizonyíték arra, hogy a Fujitsu recovery nem egyszerű teljes-chip másolás;
+- demonstrált minimális régiós helyreállítási módszer.
 
-Ezek az eredmények hasznosak lehetnek olyan kutatásokhoz, amelyek témája:
+Ezek hasznosak lehetnek olyan kutatóknak, akik az alábbiakkal foglalkoznak:
 
-- Fujitsu D3313 firmware-architektúra;
-- beágyazott rendszerek személyre szabása;
-- firmware-ben tárolt hardverazonosság;
-- firmware recovery mechanizmusok;
-- EEPROM nélküli PCIe-eszközök inicializációja;
+- D3313 firmware-architektúra;
+- embedded rendszer személyre szabás;
+- firmware-identitástárolás;
+- recovery mechanizmusok;
+- EEPROM nélküli PCIe inicializáció;
 - BIOS-forenzika;
-- régi ipari rendszerek digitális megőrzése.
+- ipari és legacy rendszerek megőrzése.
 
 ---
 
-# 46. Végkövetkeztetés
+# 46. Következtetés
 
-A vizsgálat kezdetén nem lehetett meghatározni, hogy a FUTRO S930 hibájának oka:
+A vizsgálat kezdetén nem lehetett eldönteni, hogy a FUTRO S930 hibája:
 
-- mechanikai alaplapi sérülés;
-- processzor környéki sérülés;
+- mechanikai alaplapsérülés;
+- processzorkörnyéki sérülés;
 - tápellátási hiba;
-- SPI-firmware sérülés;
-- vagy ezek kombinációja.
+- SPI-firmware-sérülés;
+- vagy több hiba kombinációja.
 
-A végállapot lényegesen jobban ismert.
+A végső állapot lényegesen jobban ismert.
 
 A rendszer jelenleg:
 
 - sikeresen POST-ol;
 - működő BIOS Setupot biztosít;
-- Debian Linuxot indít;
-- Ethernet-hálózaton működik;
-- tartalmazza a helyreállított, gépspecifikus Fujitsu OEM-régiót;
-- és ismét az eredeti Fujitsu LAN-azonosságot inicializálja.
+- Debian Linuxot bootol;
+- Etherneten működik;
+- tartalmazza a helyreállított gépspecifikus Fujitsu OEM-régiót;
+- az eredeti Fujitsu LAN-azonosságot inicializálja.
 
-A recovery utáni MAC-hibát nem Realtek eFuse-programozással oldottuk meg.
+A recovery utáni MAC-hiba **nem** Realtek eFuse programozással került javításra.
 
-A közvetlen vizsgálat alapján az eFuse látszólag korábban soha nem volt programozva.
+A közvetlen vizsgálat szerint az eFuse látszólag soha nem volt programozva.
 
-A döntő információ ehelyett a Fujitsu platform gépspecifikus SPI/OEM-régiójában található.
+A döntő gépazonosság ehelyett a Fujitsu SPI/OEM régióban volt megtalálható.
 
-A végső javítási folyamat ezért:
+A végső helyreállítás ezért:
 
 ```text
 megbízható recovery utáni SPI-kiolvasás
         ↓
 összehasonlítás az eredeti firmware-rel
         ↓
-egyetlen 64 KiB-os gépspecifikus régió izolálása
+egy 64 KiB-os gépspecifikus régió izolálása
         ↓
-fizikai verify írás előtt
+írás előtti fizikai verification
         ↓
-szelektív in-system flash írás
+szelektív in-system flash write
         ↓
-független ellenőrzés írás után
+független írás utáni verification
         ↓
 hidegindítás
         ↓
 eredeti platformazonosság helyreállítása
 ```
 
-sorozatból állt.
+folyamatból állt.
 
-A 16 GB-os mSATA felismerési problémája továbbra is külön dokumentált, nyitott kérdés, és jelenleg nem tekintjük a sikeresen lezárt firmware-helyreállítás részének.
+A külön 16 GB-os mSATA detektálási probléma továbbra is nyitott, és jelenleg nem tekinthető a lezárt BIOS/OEM recovery részének.
 
-A BIOS-helyreállítás és a Fujitsu gépspecifikus OEM-azonosság visszaállítása ezért:
+A BIOS-helyreállítás és a Fujitsu gépspecifikus OEM-azonosság helyreállítása ezért:
 
-# **SIKERESEN LEZÁRULT**
+# **SIKERESEN BEFEJEZETTNEK TEKINTHETŐ**
 
-A következő fázis már elsősorban nem javítási feladat.
+A következő szakasz már nem elsősorban javítási feladat.
 
-A helyreállított platform, a felhalmozott mérési eredmények, a firmware-összehasonlítások és a reprodukálható bizonyítéki lánc alapot biztosítanak **a D3313 firmware-architektúrájának, manufacturing adatmodelljének és recovery mechanizmusának további kutatásához**.
+A helyreállított platform, az összegyűjtött mérések, firmware-összehasonlítások és reprodukálható bizonyítási lánc további kutatások alapjául szolgálhat:
 
----
-
-## Jogi és biztonsági nyilatkozat
-
-Ez a repository saját tulajdonú és ellenőrzött hardveren végzett kísérleti firmware- és hardvermunkát dokumentál.
-
-A firmware módosítása, SPI-programozás, recovery jumper használata és alaplapi beavatkozás véglegesen károsíthatja a hardvert vagy megsemmisítheti a gépspecifikus adatokat.
-
-Az anyag kutatási, dokumentációs, megőrzési és oktatási céllal kerül közzétételre.
-
-Hasonló eljárások végrehajtásakor mindenki saját felelősségére jár el, és saját feladata megbízható mentések készítése, valamint a konkrét hardverrel kapcsolatos kockázatok megértése.
+- D3313 firmware-architektúra;
+- manufacturing struktúrák;
+- gépszemélyre szabás;
+- Fujitsu recovery működés;
+- hardver inicializálása platformfirmware-ből.
 
 ---
 
-## Jelenlegi kutatási állapot
+# 47. Aktuális kutatási állapot
 
 ```text
-BIOS recovery                          LEZÁRVA
-POST helyreállítása                    LEZÁRVA
-Debian boot                            LEZÁRVA
-Belső SPI-kiolvasás                    LEZÁRVA
-OEM-régió azonosítása                  LEZÁRVA
-Eredeti LAN-azonosság visszaállítása   LEZÁRVA
-Szelektív SPI-írás ellenőrzése         LEZÁRVA
-Realtek eFuse vizsgálata               LEZÁRVA
-Fujitsu recovery algoritmus            NYITOTT
-OEM-struktúra teljes visszafejtése     NYITOTT
-Második alaplapon reprodukció          NYITOTT
-16 GB mSATA vizsgálata                 NYITOTT
+BIOS recovery                         KÉSZ
+POST helyreállítás                    KÉSZ
+Debian boot                           KÉSZ
+Belső SPI-kiolvasás                   KÉSZ
+OEM-régió azonosítása                 KÉSZ
+Eredeti LAN-azonosság helyreállítása  KÉSZ
+Szelektív SPI írás ellenőrzése        KÉSZ
+Realtek eFuse-vizsgálat               KÉSZ
+Fujitsu recovery algoritmus           NYITOTT
+OEM-struktúra teljes reverse engineering NYITOTT
+Második alaplapos reprodukció         NYITOTT
+16 GB mSATA vizsgálat                 NYITOTT
 ```
+
+---
+
+# 48. Licenc
+
+Eltérő kifejezett jelölés hiányában a repozitóriumhoz kifejezetten létrehozott eredeti, szerzői jogi védelem alatt álló kutatási és dokumentációs anyagok licence:
+
+**Creative Commons Nevezd meg! – Ne add el! – Így add tovább! 4.0 Nemzetközi  
+(CC BY-NC-SA 4.0)**
+
+A teljes hivatalos licencszöveg:
+
+[LICENSE](LICENSE)
+
+Röviden: az érintett anyagok nem kereskedelmi célra megoszthatók és átdolgozhatók a licenc forrásmegjelölési és azonos licenc alatti továbbadási követelményeinek betartásával.
+
+Ez az összefoglaló **nem helyettesíti** a hivatalos licencszöveget.
+
+### Fontos hatóköri különbség
+
+A repozitórium tartalmazhat vagy tárgyalhat:
+
+- harmadik féltől származó firmware-t;
+- BIOS-komponenseket;
+- gyártói segédprogramokat;
+- harmadik fél dokumentációját;
+- védjegyeket;
+- harmadik fél szoftvereit;
+- forráskódot vagy szkripteket.
+
+Ezek az anyagok **nem kerülnek automatikusan CC BY-NC-SA 4.0 licenc alá** pusztán azért, mert szerepelnek vagy hivatkozás történik rájuk ebben a repozitóriumban.
+
+A szoftverek és forráskódok külön licencfeltételeket használhatnak, ahol ez kifejezetten meghatározásra kerül.
+
+A harmadik féltől származó anyagok a megfelelő jogtulajdonosok jogai és feltételei alatt maradnak.
+
+A részletes licencelési határokról, jogi nyilatkozatról, kutatási célról, biztonsági rendelkezésekről és harmadik felek jogairól:
+
+[DISCLAIMER.md](DISCLAIMER.md)
+
+Magyar változat:
+
+[DISCLAIMER.hu.md](DISCLAIMER.hu.md)
+
+A megfelelő saját eredeti anyagokra a szerzői jog jogosultja külön megállapodás alapján kereskedelmi licencet is felajánlhat.
+
+---
+
+# 49. Hivatkozás
+
+Ha ez a projekt, annak mérései, strukturális megállapításai, módszertana vagy dokumentációja hozzájárul kutatáshoz, publikációhoz, javításhoz, műszaki elemzéshez vagy származékos kutatáshoz, kérjük, hivatkozzon rá.
+
+A géppel olvasható hivatkozási metaadat:
+
+[CITATION.cff](CITATION.cff)
+
+Preferált projektnév:
+
+> **Fujitsu FUTRO S930 / D3313-E1: BIOS Recovery, Firmware Analysis, and Restoration of Machine-Specific OEM Identity**
+
+Szerző:
+
+**Bencze Péter**
+
+Repozitórium:
+
+```text
+https://github.com/benczepeter001/fujitsu-d3313-bios-recovery
+```
+
+Az alkalmazható eredeti kutatási és dokumentációs anyagok licence:
+
+```text
+CC-BY-NC-SA-4.0
+```
+
+---
+
+# 50. Jogi és kutatási nyilatkozat
+
+Ez független kutatási projekt.
+
+Nem hivatalos Fujitsu-projekt, és nincs kapcsolatban a Fujitsuval vagy a repozitóriumban említett más gyártókkal; azok nem szponzorálják, nem tanúsítják, nem hagyják jóvá és nem támogatják hivatalosan.
+
+Minden harmadik félhez tartozó terméknév, védjegy, firmware, szoftver, dokumentáció és más védett anyag a megfelelő jogosult tulajdonában marad.
+
+Firmware-módosítás, SPI-programozás, hardveres rework és alacsony szintű diagnosztika tartós hardverkárosodást vagy gépspecifikus adatok elvesztését okozhatja.
+
+A hasonló munkát reprodukáló személy felelőssége:
+
+- saját biztonsági mentéseinek ellenőrzése;
+- az adott hardver megfelelő ismerete;
+- a kockázatok megértése;
+- a vonatkozó jogszabályok és licencek betartása;
+- kizárólag olyan rendszereken és adatokon végzett munka, amelyekhez rendelkezik szükséges jogosultsággal.
+
+A részletes és irányadó nyilatkozat:
+
+[DISCLAIMER.md](DISCLAIMER.md)
+
+Magyar megfelelője:
+
+[DISCLAIMER.hu.md](DISCLAIMER.hu.md)
+
+---
+
+Copyright © 2026 Bencze Péter és az egyes közreműködők saját eredeti hozzájárulásaik tekintetében.
+
+A harmadik felek szerzői jogai, védjegyei, firmware-ei, szoftverei, dokumentációi és más védett anyagai továbbra is a megfelelő jogosultaknál maradnak.
