@@ -1,529 +1,401 @@
-# Disclaimer
+# Legal, Research and Licensing Notice
 
-## Research and educational purpose
+## Fujitsu FUTRO S930 / D3313 BIOS Recovery Research
 
-This repository documents an independent technical investigation of privately controlled hardware.
+This repository documents independent technical research, diagnostic work, firmware-recovery experiments, hardware observations, and related procedures concerning Fujitsu FUTRO S930 systems and D3313-series hardware.
 
-The material is provided for:
-
-- technical research;
-- firmware analysis;
-- hardware preservation;
-- documentation;
-- reproducibility;
-- education;
-- and legitimate repair of hardware under the researcher's control.
-
-It is not intended to serve as an official Fujitsu repair procedure, manufacturer service manual, certified engineering document, or guaranteed recovery method.
+This document defines the legal, licensing, research, safety, and third-party-material boundaries of the repository.
 
 ---
 
-## Independent project
+## 1. Independent research project
 
-This project is independent and is not affiliated with, endorsed by, sponsored by, or produced by:
+This repository is an independent research and documentation project.
 
-- Fujitsu;
-- Kontron;
-- Realtek;
-- Macronix;
-- WCH;
-- AMI;
-- or any other manufacturer, standards body, software project, or community referenced in this repository.
+It is not an official Fujitsu project and is not affiliated with, sponsored by, approved by, certified by, or endorsed by Fujitsu or any other hardware, software, firmware, chipset, operating-system, or tool vendor mentioned in the repository.
 
-Product names, trademarks, model names, software names, and company names remain the property of their respective owners.
+All product names, company names, trademarks, service marks, firmware names, software names, and logos remain the property of their respective owners.
 
-They are used solely for technical identification, documentation, attribution, and research reference.
+References to third-party products are made solely for identification, interoperability, technical documentation, research, and educational purposes.
 
 ---
 
-## Experimental scope
+## 2. Purpose of the repository
 
-The findings documented in this repository are based primarily on one investigated Fujitsu FUTRO S930 system equipped with a Fujitsu D3313-E1 mainboard.
+The primary purposes of this repository are:
 
-Unless explicitly stated otherwise, observations from this machine should not automatically be generalized to:
+- documenting BIOS and firmware recovery procedures;
+- documenting hardware-specific behavior of Fujitsu FUTRO S930 and D3313-series systems;
+- recording diagnostic observations and experimental results;
+- preserving reproducible research notes;
+- analysing firmware structure and platform-specific configuration;
+- documenting recovery of machine-specific configuration and OEM identity data;
+- comparing recovery methods, tools, firmware packages, and hardware behavior;
+- supporting legitimate repair, restoration, interoperability, research, education, and defensive technical analysis;
+- documenting unsuccessful approaches and failure modes so that others can avoid unnecessary risk or repeatable mistakes.
 
-- every D3313-E1 mainboard;
-- every FUTRO S930 system;
-- other D3313 variants;
-- other Fujitsu systems;
-- other Realtek controller revisions;
-- other firmware revisions.
-
-Hardware revisions, firmware versions, manufacturing configuration, component substitutions, and runtime state may materially change system behavior.
-
----
-
-## Evidence classification
-
-Where relevant, this project distinguishes between:
-
-```text
-[OFFICIAL]
-[OBSERVED]
-[INFERRED]
-[OPEN QUESTION]
-```
-
-### `[OFFICIAL]`
-
-Information obtained from manufacturer documentation, official firmware packages, standards, upstream software documentation, or equivalent primary sources.
-
-### `[OBSERVED]`
-
-Information directly measured, read, logged, extracted, reproduced, or verified on the investigated hardware.
-
-### `[INFERRED]`
-
-A conclusion strongly supported by multiple observations but not itself directly measured.
-
-### `[OPEN QUESTION]`
-
-A hypothesis, unresolved mechanism, or behavior requiring further evidence or independent reproduction.
-
-This distinction is intended to prevent interpretation from being presented as measurement.
+The repository is intended as a technical case study and research record rather than as an official repair manual.
 
 ---
 
-## No warranty
+## 3. License for original research and documentation
 
-All information, procedures, commands, offsets, firmware observations, scripts, diagrams, configuration examples, research notes, and other material are provided:
+Unless explicitly stated otherwise, the original copyrightable research and documentation created specifically for this repository is made available under the:
 
-> **AS IS**
+**Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International  
+(CC BY-NC-SA 4.0)**
 
-without warranty of any kind, express or implied.
+The complete official license text is contained in the repository's:
+
+**[LICENSE](LICENSE)**
+
+The official Creative Commons license terms govern the licensed material.
+
+In practical terms, the license permits others to share and adapt covered material for non-commercial purposes, provided that the applicable attribution and ShareAlike requirements are satisfied.
+
+This explanatory document does not replace or modify the official license.
+
+If any statement in this document conflicts with the official CC BY-NC-SA 4.0 legal code, the official license terms control for material actually licensed under CC BY-NC-SA 4.0.
+
+---
+
+## 4. Scope of the Creative Commons license
+
+The CC BY-NC-SA 4.0 license is intended to cover original copyrightable non-software material created by the repository author for this project, including, where applicable:
+
+- written research notes;
+- technical explanations;
+- original documentation;
+- original diagrams;
+- original tables;
+- original photographs;
+- original measurements;
+- original analysis;
+- original research summaries;
+- original testing methodology;
+- original descriptions of procedures;
+- original observations and conclusions.
+
+The license applies only to material for which the repository author has the legal authority to grant such rights.
+
+The presence of material in this repository does **not** automatically mean that every file is owned by the repository author or licensed under CC BY-NC-SA 4.0.
+
+---
+
+## 5. Software, scripts and source code
+
+Creative Commons licenses are primarily designed for creative, educational, research, and documentation material and are not intended to serve as the primary software license for source code.
+
+Accordingly, unless a software file or directory explicitly states otherwise:
+
+**source code, scripts, utilities, applications, executable code, software components, build files, and other program code are not automatically licensed under CC BY-NC-SA 4.0 merely because they are present in this repository.**
+
+Software developed specifically for this project may later be released under a separate:
+
+- open-source license;
+- source-available license;
+- dual-license model;
+- proprietary license;
+- commercial license;
+- or another software-specific licensing arrangement.
+
+Where a file or directory contains its own license notice, that specific notice governs that material.
+
+Until a separate software license is explicitly provided, users should not assume that software or source code contained in the repository carries the same reuse permissions as the CC-licensed research documentation.
+
+---
+
+## 6. Commercial use and separate licensing
+
+The CC BY-NC-SA 4.0 license does not grant permission for uses that fall outside its NonCommercial terms.
+
+The copyright holder may separately offer additional permissions or a separate commercial license for original material for which the copyright holder owns the necessary rights.
+
+Possible separately negotiated permissions may include, for example:
+
+- commercial publication;
+- commercial training material;
+- integration into paid products or services;
+- professional consulting deliverables;
+- commercial technical documentation;
+- commercial databases or knowledge bases;
+- commercial research products;
+- commercial software or services incorporating separately licensable original material.
+
+Such permission requires a separate agreement with the relevant copyright holder.
+
+The availability of separate commercial terms does not change the CC BY-NC-SA 4.0 rights already granted for material distributed under that license.
+
+A Creative Commons license already validly granted to a recipient is not revoked merely because the copyright holder later offers the same original material under different or commercial terms.
+
+Commercial licensing inquiries concerning original repository material may be directed to the repository owner through the GitHub account associated with this project.
+
+---
+
+## 7. Third-party firmware, BIOS images and vendor materials
+
+This distinction is particularly important for a firmware-recovery project.
+
+Firmware, BIOS code, vendor software, OEM utilities, update packages, drivers, documentation, binary components, microcode, embedded modules, trademarks, logos, and other third-party materials may be protected by copyright, trademark, patent, contract, or other rights belonging to their respective owners.
+
+Such third-party material is **not relicensed under CC BY-NC-SA 4.0 by this repository** merely because it is:
+
+- discussed;
+- analysed;
+- referenced;
+- linked;
+- identified;
+- compared;
+- shown in screenshots;
+- included in an analytical description;
+- extracted during legitimate research;
+- or otherwise mentioned in the repository.
+
+In particular, Fujitsu firmware and BIOS components remain subject to whatever rights and terms apply to those materials.
+
+The repository's CC BY-NC-SA 4.0 license applies only to material for which the repository author possesses sufficient rights to grant that license.
+
+---
+
+## 8. Firmware dumps and device-specific data
+
+A firmware dump created from a physical device may contain several different categories of information, potentially including:
+
+- third-party copyrighted firmware code;
+- OEM configuration data;
+- platform configuration;
+- serial identifiers;
+- network identifiers;
+- machine-specific values;
+- calibration information;
+- device-specific settings;
+- or other data originating from the hardware or its manufacturer.
+
+The act of creating or analysing a dump does not transfer ownership of third-party intellectual property contained within it.
+
+Consequently, a firmware dump should not automatically be treated as an original work of the repository author or as CC BY-NC-SA 4.0 material.
+
+Where firmware images, extracts, hashes, structural information, or related artifacts are discussed, users remain responsible for determining what rights apply to the underlying material.
+
+Machine-specific identifiers should be handled carefully before public distribution.
+
+---
+
+## 9. Attribution
+
+When CC BY-NC-SA 4.0 material from this repository is shared or adapted, attribution should identify the original repository/project and its author or repository owner in a reasonable manner consistent with the license.
+
+Where reasonably practicable, attribution should include:
+
+- the repository or project name;
+- the repository owner or credited author;
+- a link to the original repository;
+- a reference to **CC BY-NC-SA 4.0**;
+- a link to or copy of the applicable license;
+- and an indication of whether modifications were made.
+
+Attribution must not imply endorsement, sponsorship, certification, partnership, or official affiliation.
+
+---
+
+## 10. Research integrity
+
+The repository aims to distinguish clearly between:
+
+- directly observed facts;
+- measured results;
+- reproducible procedures;
+- interpretations;
+- hypotheses;
+- external information;
+- and conclusions that remain uncertain.
+
+Where possible, research claims should be supported by:
+
+- measurements;
+- firmware hashes;
+- photographs;
+- logs;
+- tool output;
+- reproducible procedures;
+- primary documentation;
+- or clearly identified external sources.
+
+An unsuccessful experiment may remain documented if it provides useful technical information.
+
+Historical notes may therefore describe procedures that are no longer recommended.
+
+Readers should consider the context and current status of a procedure before reproducing it.
+
+---
+
+## 11. Safety and hardware risk
+
+Firmware programming, BIOS modification, direct flash access, soldering, desoldering, hot-air rework, voltage measurement, board-level diagnostics, and similar procedures can permanently damage hardware.
+
+Possible consequences include:
+
+- an unbootable system;
+- corrupted firmware;
+- destroyed flash memory;
+- damaged motherboard components;
+- damaged programmers or test equipment;
+- data loss;
+- electrical damage;
+- overheating;
+- burns or other physical injury.
+
+Any procedure described in this repository should be performed only by a person who understands the associated risks.
+
+Backups and non-destructive diagnostic methods should be preferred whenever possible.
+
+Power should be disconnected whenever required by the relevant procedure and electrical conditions.
+
+The repository is not a substitute for appropriate technical competence, electrical safety practices, manufacturer documentation, or professional repair services.
+
+---
+
+## 12. No warranty
+
+Material in this repository is provided for research, documentation, educational, repair, interoperability, and informational purposes.
+
+To the maximum extent permitted by applicable law, it is provided **AS IS** and **AS AVAILABLE**, without warranties or representations of any kind.
 
 No guarantee is made that:
 
-- a documented procedure will work on another system;
-- another D3313 board will use the same firmware layout;
-- offsets will remain valid across firmware revisions;
-- recovery procedures will succeed;
-- a particular flash device will behave identically;
-- hardware will remain functional;
-- machine-specific data will be preserved;
-- a recovery attempt will be reversible;
-- or a system restored using these methods will be suitable for production use.
+- a documented procedure will work on another device;
+- hardware revisions will behave identically;
+- a firmware image is appropriate for another machine;
+- an external source remains accurate or available;
+- a particular tool behaves identically across versions;
+- or a procedure is free from errors or risks.
+
+Users must independently verify procedures before applying them to hardware, software, firmware, networks, or valuable data.
 
 ---
 
-## Risk of permanent hardware damage
+## 13. Limitation of liability
 
-Firmware modification and board-level repair can permanently damage hardware.
+To the maximum extent permitted by applicable law, the repository author, contributors, and copyright holders shall not be liable for damage or loss resulting from the use of information or procedures contained in this repository.
 
-Possible consequences include, but are not limited to:
+This may include, without limitation:
 
-- an unbootable system;
-- corrupted SPI firmware;
-- damaged flash storage;
-- damaged mainboard components;
-- damaged power-delivery circuitry;
-- damaged peripheral controllers;
-- loss of firmware configuration;
-- loss of board-specific data;
-- loss of recovery capability.
+- hardware damage;
+- firmware corruption;
+- loss of data;
+- loss of device configuration;
+- loss of availability;
+- economic loss;
+- loss of revenue;
+- loss of warranty coverage;
+- or other direct or indirect consequences.
 
-Incorrect voltage, wiring, programmer configuration, clip orientation, flash-chip selection, or write operation may permanently damage a device.
+Use of the material is at the user's own risk.
 
-Anyone attempting similar work is responsible for understanding the electrical and firmware characteristics of their own hardware.
-
----
-
-## Risk of data and identity loss
-
-Firmware devices may contain machine-specific information that is not present in generic manufacturer firmware images.
-
-Examples may include:
-
-- serial numbers;
-- UUIDs;
-- PC IDs;
-- MAC addresses;
-- OEM/manufacturing data;
-- licensing information;
-- platform-specific configuration;
-- calibration values;
-- cryptographic or security-related material;
-- other device-specific metadata.
-
-A generic firmware image may restore bootability without restoring the complete identity or configuration of a particular machine.
-
-This repository therefore strongly recommends preserving verified copies of original firmware before attempting any modification.
+Nothing in this section limits liability where such limitation is prohibited by applicable law.
 
 ---
 
-## Backup methodology
+## 14. Lawful and authorized use
 
-A single apparently successful firmware read should not automatically be considered a trustworthy backup.
+Material relating to firmware, reverse engineering, diagnostics, networking, security, digital forensics, hardware programming, or system analysis is provided for legitimate purposes such as:
 
-Where possible, a safer workflow is:
-
-```text
-READ
-  ↓
-READ AGAIN
-  ↓
-COMPARE
-  ↓
-HASH
-  ↓
-ARCHIVE
-  ↓
-ANALYZE
-  ↓
-ONLY THEN WRITE
-```
-
-Independent reads should be compared and cryptographically hashed.
-
-Original dumps should be preserved unchanged.
-
-Modified firmware images should be stored separately from original evidence.
-
----
-
-## Irreversible and limited-write storage
-
-Special caution applies to:
-
-- eFuse;
-- OTP memory;
-- one-time-programmable configuration;
-- security fuses;
-- hardware identity fuses;
-- other limited-write or irreversible storage.
-
-Programming such storage can be permanent.
-
-The investigation documented here deliberately avoided programming the Realtek eFuse after evidence suggested that doing so would not reproduce the original Fujitsu platform mechanism.
-
-Users should not modify irreversible storage unless they understand:
-
-- what is being programmed;
-- how the storage behaves electrically;
-- whether the operation can be reversed;
-- whether the target platform originally used that storage mechanism;
-- whether a less invasive recovery method exists.
-
----
-
-## Minimum-change principle
-
-This project generally follows the methodological principle:
-
-> **Modify only the smallest firmware region that the evidence demonstrates must be changed.**
-
-This approach is intended to reduce unnecessary modification of unrelated firmware state, including:
-
-- runtime NVRAM;
-- boot variables;
-- recovery state;
-- manufacturing data;
-- counters;
-- unknown firmware structures.
-
-This principle reduces unnecessary intervention but does not eliminate risk.
-
----
-
-## Privacy and machine-specific information
-
-Raw firmware images should be treated as potentially sensitive technical evidence.
-
-They may contain:
-
-- serial numbers;
-- MAC addresses;
-- UUIDs;
-- PC IDs;
-- manufacturing identifiers;
-- HDCP-related information;
-- licensing information;
-- platform configuration;
-- security-related metadata;
-- unknown machine-specific structures.
-
-For this reason, personalized raw firmware images from the investigated system are not intentionally distributed through this repository.
-
----
-
-## Cryptographic hashes and provenance
-
-Cryptographic hashes may be published for:
-
-- provenance;
-- reproducibility;
-- artifact identification;
-- future comparison.
-
-A cryptographic digest can identify whether another binary is bit-for-bit identical to a research artifact without disclosing the artifact's contents.
-
-Publication of a hash does not mean publication of the underlying firmware image.
-
----
-
-## Screenshots, photographs, logs, and media
-
-Images, screenshots, recordings, logs, and terminal output may also contain identifying information.
-
-Examples include:
-
-- usernames;
-- local filesystem paths;
-- IP addresses;
-- MAC addresses;
-- serial numbers;
-- UUIDs;
-- device labels;
-- stickers;
-- QR codes;
-- barcodes;
-- EXIF metadata;
-- GPS metadata;
-- background objects or documents.
-
-All public evidence should therefore be reviewed and sanitized before publication.
-
-Raw media should not automatically be assumed safe for public distribution.
-
----
-
-## Accidental disclosure
-
-Despite careful review, accidental disclosure of machine-specific or personal information may still occur.
-
-If such material is identified, responsible notification is encouraged so that the repository can be corrected.
-
-Because Git repositories preserve history and public repositories may be cloned, forked, archived, or indexed, removal from the current repository does not guarantee that previously published information disappears from all copies.
-
----
-
-## Third-party software and tools
-
-This project references third-party software including, among others:
-
-- flashrom;
-- UEFITool;
-- IMSProg;
-- Linux;
-- systemd;
-- Realtek diagnostic utilities;
-- Realtek PGTool-compatible tooling;
-- community-developed utilities.
-
-Those projects retain their own:
-
-- copyrights;
-- licenses;
-- documentation;
-- warranty terms;
-- security policies.
-
-Their inclusion or citation here does not imply ownership, endorsement, or redistribution rights by this project.
-
-Users should consult the original project or manufacturer for authoritative licensing and usage information.
-
----
-
-## Third-party firmware and proprietary material
-
-This repository does not intend to redistribute proprietary manufacturer firmware except where redistribution is explicitly permitted.
-
-Official firmware packages are referenced for:
-
-- identification;
-- comparison;
-- research context;
-- reproducibility.
-
-Machine-specific firmware dumps from the investigated system are treated as research evidence and are not publicly distributed by default.
-
-Users are responsible for obtaining firmware and software through lawful sources and complying with applicable license terms.
-
----
-
-## Copyright and attribution
-
-This project does not claim authorship of techniques, utilities, firmware formats, standards, or prior research created by others.
-
-Relevant prior work, manufacturer documentation, software projects, and community research are credited in:
-
-```text
-SOURCES.md
-```
-
-The project's contribution is the documented application, combination, verification, and interpretation of those methods in the investigated D3313-E1 case.
-
----
-
-## Responsible use
-
-The procedures documented here are intended for hardware:
-
-- owned by the researcher;
-- controlled by the researcher;
-- or legitimately entrusted to the researcher for analysis or repair.
-
-Nothing in this repository should be interpreted as authorization to:
-
-- modify systems without permission;
-- interfere with third-party hardware;
-- bypass access controls without authorization;
-- obtain confidential information without authorization;
-- alter hardware identity for deceptive or unlawful purposes.
-
-The project concerns legitimate firmware recovery, preservation, and technical analysis.
-
----
-
-## Security research context
-
-Firmware-research techniques can overlap with computer-security techniques.
-
-Their inclusion here is intended to support:
-
-- defensive research;
+- research;
 - repair;
-- hardware preservation;
+- restoration;
+- education;
 - interoperability;
-- diagnostics;
-- understanding of platform behavior.
+- defensive analysis;
+- documentation;
+- preservation;
+- and authorized testing.
 
-Users remain responsible for ensuring that their activities comply with applicable law, contractual obligations, and authorization boundaries.
+Nothing in this repository grants authorization to access, alter, monitor, interfere with, bypass protections on, or analyse systems, devices, accounts, communications, networks, or data where the user does not have the necessary legal right or permission.
 
----
+Users are responsible for compliance with applicable:
 
-## No safety certification
-
-The procedures documented here are not safety-certified.
-
-The repository does not certify:
-
-- electrical safety;
-- electromagnetic compliance;
-- production suitability;
-- regulatory compliance;
-- long-term hardware reliability.
-
-Special care is required when working with:
-
-- powered mainboards;
-- external programmers;
-- exposed conductors;
-- modified power supplies;
-- storage devices;
-- soldering or hot-air equipment.
+- laws;
+- regulations;
+- licenses;
+- contracts;
+- privacy requirements;
+- authorization requirements;
+- and third-party rights.
 
 ---
 
-## No professional engineering certification
+## 15. External sources and citations
 
-This repository is a technical research record.
+External documentation, articles, forum posts, source code, technical discussions, vendor documents, and other references remain subject to their own licenses and legal terms.
 
-It should not be interpreted as:
+A citation or link does not imply ownership of the referenced material.
 
-- professional engineering certification;
-- manufacturer service authorization;
-- official repair documentation;
-- safety certification;
-- warranty guidance;
-- legal advice.
+Where material from an external source is reproduced under an applicable quotation right, license, permission, exception, or limitation, the underlying rights remain with the original rights holder.
 
-For regulated, safety-critical, commercial, or production systems, independent professional review may be required.
+Users wishing to reuse such third-party material should consult the original source and applicable terms.
 
 ---
 
-## Experimental contradictions
+## 16. Contributions
 
-A future result that contradicts a conclusion in this repository should not automatically be treated as an error by the person reproducing the work.
+Contributors retain copyright in their own contributions unless they explicitly agree otherwise.
 
-Possible explanations may include:
+A contribution should only contain material that the contributor has the right to submit.
 
-- hardware revision differences;
-- firmware revision differences;
-- manufacturing variation;
-- undocumented configuration;
-- component substitution;
-- an incorrect current interpretation.
+Acceptance of a contribution into the repository does not automatically transfer copyright ownership to the repository owner.
 
-Contradictory results are valuable research evidence.
+Where a contribution is intended to become part of CC BY-NC-SA 4.0 documentation, contributors should ensure that they have the authority to provide that material under compatible terms.
+
+Software contributions may be subject to a separate software license once such a license is established for the relevant part of the project.
 
 ---
 
-## Corrections and independent reproduction
+## 17. Separate and future licensing
 
-Technical corrections, independent reproductions, negative results, contradictory findings, and additional evidence are welcome.
+The copyright holder reserves the right, for material for which they own the necessary rights, to:
 
-Where new evidence changes an interpretation, the repository may be updated.
+- distribute future versions under different terms;
+- grant additional permissions;
+- enter into separate commercial agreements;
+- offer dual licensing;
+- offer software under a separate software-specific license;
+- stop distributing future copies;
+- or publish additional material under another license.
 
-The Git version history should preserve the evolution of the research record.
+These choices do not retroactively revoke rights already validly granted under an applicable Creative Commons license.
 
----
-
-## Scope of conclusions
-
-The strongest conclusions in this repository apply to the specific investigated D3313-E1 system unless replication demonstrates otherwise.
-
-For example, evidence from the investigated machine supports conclusions about:
-
-- its original SPI image;
-- its OEM region;
-- its Realtek eFuse state;
-- its recovery-state firmware;
-- its selective restoration result.
-
-These observations should not be silently generalized to all systems in the same product family.
+Third-party material cannot be relicensed by the repository owner unless the repository owner has the necessary rights to do so.
 
 ---
 
-## External links
+## 18. Priority of applicable terms
 
-This repository contains links to:
+For original material expressly covered by CC BY-NC-SA 4.0, the official Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International Public License is authoritative.
 
-- manufacturer documentation;
-- standards;
-- software projects;
-- technical documentation;
-- community forums;
-- prior research.
+For software or files carrying a separate license notice, that separate license governs.
 
-External content may change, move, or disappear.
+For third-party material, the rights and terms of the relevant third-party rights holder govern.
 
-The presence of a link does not imply endorsement of every statement on the linked site.
-
-Community sources are intentionally distinguished from manufacturer documentation and direct local evidence.
+This document is intended to clarify the structure and scope of the repository and does not replace the applicable licenses themselves.
 
 ---
 
-## Repository evolution
+## 19. Contact
 
-This repository may later include additional:
-
-- screenshots;
-- diagrams;
-- sanitized binary excerpts;
-- scripts;
-- reproducibility tools;
-- recovery documentation;
-- research notes;
-- independent reproductions.
-
-The same privacy, attribution, evidence-classification, and safety principles should apply to future additions.
+Questions concerning the research, attribution, permission to reuse original material, or possible commercial licensing may be submitted to the repository owner through the GitHub account associated with this repository.
 
 ---
 
-## Contact
+**Repository licensing structure**
 
-For technical corrections, reproduction results, or responsible reports concerning accidentally published information, contact:
-
-**Bencze Péter**  
-**Email:** bencze.peter86@proton.me
+- **Original research and documentation:** CC BY-NC-SA 4.0, unless otherwise stated
+- **Official license text:** `LICENSE`
+- **Software/source code:** separate license where explicitly provided
+- **Third-party firmware and materials:** rights remain with their respective owners
+- **Commercial licensing of eligible original material:** available only by separate agreement where offered
 
 ---
 
-## Final notice
+Copyright © 2026 repository author and respective contributors for their original contributions.
 
-The existence of a successful recovery on the investigated system does not make the procedure universally safe.
-
-Anyone reproducing this work should understand the hardware, preserve independently verified backups, and treat every firmware write as a potentially destructive operation.
-
-Use the material in this repository only within your own authorization, technical competence, and risk tolerance.
+Third-party copyrights, trademarks, firmware, software, documentation, and other protected materials remain the property of their respective rights holders.
