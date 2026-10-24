@@ -41,10 +41,11 @@ keywords:
   - "firmware analysis"
 
 repository: "https://github.com/benczepeter001/fujitsu-d3313-bios-recovery"
-
 url: "https://github.com/benczepeter001/fujitsu-d3313-bios-recovery"
 
 date-released: "2026-10-24"
+
+license: "CC-BY-NC-SA-4.0"
 
 preferred-citation:
   type: report
