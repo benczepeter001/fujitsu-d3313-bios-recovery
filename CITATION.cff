@@ -1,0 +1,61 @@
+cff-version: 1.2.0
+
+message: "If you use, reference, reproduce, or build upon this work, please cite it using the metadata below."
+
+title: "Fujitsu D3313-E1 BIOS Recovery and Firmware Analysis"
+
+authors:
+  - family-names: "Bencze"
+    given-names: "Péter"
+    email: "bencze.peter86@proton.me"
+
+abstract: >-
+  A forensic-style technical investigation of BIOS recovery, SPI firmware
+  acquisition, machine-specific OEM data, Realtek network-controller identity,
+  eFuse state, and selective firmware restoration on a Fujitsu FUTRO S930
+  equipped with a Fujitsu D3313-E1 mainboard. The investigation documents
+  duplicate cryptographically verified SPI acquisitions, comparison with
+  official Fujitsu R1.16 firmware, identification of a 64 KiB machine-specific
+  OEM/manufacturing region, analysis of post-recovery loss of permanent LAN
+  identity, direct Realtek EEPROM/eFuse diagnostics, internal SPI acquisition
+  under Linux, and restoration of the original platform identity by selectively
+  rewriting only the demonstrated OEM region.
+
+keywords:
+  - "Fujitsu D3313-E1"
+  - "Fujitsu FUTRO S930"
+  - "BIOS recovery"
+  - "UEFI"
+  - "SPI flash"
+  - "firmware forensics"
+  - "firmware recovery"
+  - "OEM data"
+  - "manufacturing data"
+  - "flashrom"
+  - "CH341A"
+  - "MX25L6473F"
+  - "Realtek RTL8168G"
+  - "MAC address"
+  - "eFuse"
+  - "hardware forensics"
+  - "firmware analysis"
+
+repository: "https://github.com/benczepeter001/fujitsu-d3313-bios-recovery"
+
+url: "https://github.com/benczepeter001/fujitsu-d3313-bios-recovery"
+
+date-released: "2026-10-24"
+
+preferred-citation:
+  type: report
+  title: "Fujitsu FUTRO S930 / D3313-E1: BIOS Recovery, Firmware Analysis, and Restoration of Machine-Specific OEM Identity"
+  authors:
+    - family-names: "Bencze"
+      given-names: "Péter"
+      email: "bencze.peter86@proton.me"
+  date-published: "2026-10-24"
+  url: "https://github.com/benczepeter001/fujitsu-d3313-bios-recovery"
+  notes: >-
+    Forensic-style technical case study documenting evidence-driven firmware
+    recovery and reconstruction of machine-specific OEM identity on a Fujitsu
+    D3313-E1 mainboard.
